@@ -1,6 +1,7 @@
 #!/bin/bash
 
 TmpDir=/tmp
+ScreenProfilePath=~/.config/screen/
 [[ -n $TEMP ]] && TmpDir=$TEMP;
 [[ -n $TMP ]] && TmpDir=$TMP;
 
@@ -8,13 +9,12 @@ ScreenHeight=20;
 [[ $LINES -ge 20 ]] && ScreenHeight=$LINES;
 let Margin=LINES/4
 
-BackTitle="Sessions actives"
-MenuTitle="${USER}@$(hostname)"
 MenuNewSessLbl="Nova sessió"
 let MenuWHeight=$ScreenHeight-5-$Margin
 MenuWWidth=70
 let MenuHeigth=$MenuWHeight-5
 
+BackTitle="SuperScreen"
 LabelEditTitle="Etiqueta per a la nova sessió"
 LabelEditLabel="Etiqueta"
 LabelEditWHeight=11
@@ -33,6 +33,9 @@ CustomOptions=""
 
 
 function scrSelect {
+	#{{{
+	MenuTitle="Sessions actives per ${USER}@$(hostname)"
+
 	(echo "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
 		\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
 		$(
@@ -47,36 +50,113 @@ function scrSelect {
 	) 2> "${TmpDir}/scrSelect ${PPID}.tmp"
 	eval $1=$(cat "${TmpDir}/scrSelect ${PPID}.tmp")
 	rm "${TmpDir}/scrSelect ${PPID}.tmp";
+	#}}}
 }
 
 
-function newSession {
+
+function profileSelect {
+	#{{{
+
+
+	MenuTitle="Sel·leccioni perfil"
+
+	(echo "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
+		\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
+		$((
+			pushd ${ScreenProfilePath} &> /dev/null
+			# Named (and not running) profiles:
+			for tpl in *.screentpl; do
+				if ( \ 
+					[ $( \
+						screen -ls | grep -c "$(cat ${tpl} | grep -Ei '^sessionname .' | perl -pe 's/^\w+\s.//;s/.$//')" \
+					) -eq 0 \
+					] \
+				) then
+					echo \"$(echo ${tpl} | perl -pe 's/\.screentpl$//')\" \"$(grep -Ei '^sessionname .' ${tpl} | perl -pe 's/^\w+//')\";
+				fi;
+			done 2>/dev/null;
+			# Unnamed (generic) profiles:
+			for tpl in *.screentpl; do
+				if ( \ 
+					[ "$( \
+						cat ${tpl} | grep -c -Ei '^sessionname .' \
+					)" -eq 0 \
+					]
+				) then
+				echo \"$(echo ${tpl} | perl -pe 's/\.screentpl$//')\" \"---Perfil---\";
+				fi;
+			done 2>/dev/null;
+			popd &> /dev/null
+		) | xargs) \
+		\"----\" \"${MenuNewSessLbl}\"" | bash
+	) 2> "${TmpDir}/profSelect ${PPID}.tmp"
+
+
+	eval $1=$(cat "${TmpDir}/profSelect ${PPID}.tmp")
+	rm "${TmpDir}/profSelect ${PPID}.tmp";
+
+
+	#}}}
+}
+
+
+
+function getLabel {
+	#{{{
 
 	# Require label for new session:
-	dialog --form "${LabelEditTitle}: " "${LabelEditWHeight}" "${LabelEditWWidth}" "${LabelEditHeight}" "${LabelEditLabel}" "${LabelEditY1}" "${LabelEditX1}" "${LabelEditDefVal}" "${LabelEditY2}" "${LabelEditX2}" "${LabelEditFlen}" "${LabelEditIlen}" 2> "${TmpDir}/screensessname_${PPID}.tmp"
+	dialog --form "${LabelEditTitle}: " "${LabelEditWHeight}" "${LabelEditWWidth}" "${LabelEditHeight}" "${LabelEditLabel}" "${LabelEditY1}" "${LabelEditX1}" "${LabelEditDefVal}" "${LabelEditY2}" "${LabelEditX2}" "${LabelEditFlen}" "${LabelEditIlen}" 2> "${TmpDir}/screensessname_${PPID}.tmp" || exit 0
 
 	# Read label from temporary file:
-	MainLabel=$(cat "${TmpDir}/screensessname_${PPID}.tmp");
+	X="$(cat ${TmpDir}/screensessname_${PPID}.tmp)";
 	rm "${TmpDir}/screensessname_${PPID}.tmp";
-	
-	# Clear screen and create requested session:
-	clear;
-	screen -S "${MainLabel}"
 
+	if ( [ "$X" == "" ] ) then
+		getLabel X;
+	fi;
+
+	eval $1=$X
+
+	#}}}
+}
+
+
+
+function newSession {
+	#{{{
+
+	getLabel MainLabel
+
+	# Clear screen and create requested session:
+	if (
+		[ -n "${MainLabel}" ]
+	) then
+		clear;
+		screen -S "${MainLabel}"
+	else
+		newSession; # Retry.
+	fi;
+
+	#}}}
 }
 
 
 function joinSession {
-
+	#{{{
 	# Clear screen and attach to selected session:
-	clear;
-	screen -rd ${MainPID};
-
+	if ( [ -n "${MainPID}" ] ) then
+		clear;
+		screen -rd ${MainPID};
+	else
+		exit 1
+	fi;
+	#}}}
 }
 
 
 
-# Mandanga core:
+# main():#{{{
 while
 	scrSelect MainPID \
 	&& (
@@ -85,7 +165,22 @@ while
 			# (New Session requested)
 			test "${MainPID}" = "----"
 		) then
-			newSession
+			profileSelect ProfileID
+			if ( [ "${ProfileID}" != "" ] ) then
+				if ( [ "${ProfileID}" != "----" ] ) then
+					Profile="${ScreenProfilePath}${ProfileID}.screentpl"
+
+					Label="$(cat "${Profile}" | grep -Ei '^sessionname .' | perl -pe 's/^\w+\s+//')"
+
+					if ( [ "${Label}" == "" ] ) then
+						getLabel Label;
+					fi;
+
+					screen -c "${Profile}" -S "${Label}"
+				else
+					newSession
+				fi;
+			fi;
 		else # (Normal operation)
 
 			joinSession
@@ -95,3 +190,8 @@ while
 do
 	clear;
 done;
+#}}}
+
+
+
+
