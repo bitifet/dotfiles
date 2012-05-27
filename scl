@@ -32,8 +32,7 @@ LabelEditIlen=80
 CustomOptions=""
 
 
-# Mandanga core:
-while
+function scrSelect {
 	(echo "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
 		\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
 		$(
@@ -45,32 +44,52 @@ while
 			| perl -ne 's/^\s*(\d+)\.(\w.*?)\s*(\(\w+\))\s*$/\1 "\3 \2" /&&print' 2>/dev/null
 		) \
 		\"----\" \"${MenuNewSessLbl}\"" | bash
-	) 2> "${TmpDir}/screenlist_${PPID}.tmp" \
+	) 2> "${TmpDir}/scrSelect ${PPID}.tmp"
+	eval $1=$(cat "${TmpDir}/scrSelect ${PPID}.tmp")
+	rm "${TmpDir}/scrSelect ${PPID}.tmp";
+}
+
+
+function newSession {
+
+	# Require label for new session:
+	dialog --form "${LabelEditTitle}: " "${LabelEditWHeight}" "${LabelEditWWidth}" "${LabelEditHeight}" "${LabelEditLabel}" "${LabelEditY1}" "${LabelEditX1}" "${LabelEditDefVal}" "${LabelEditY2}" "${LabelEditX2}" "${LabelEditFlen}" "${LabelEditIlen}" 2> "${TmpDir}/screensessname_${PPID}.tmp"
+
+	# Read label from temporary file:
+	MainLabel=$(cat "${TmpDir}/screensessname_${PPID}.tmp");
+	rm "${TmpDir}/screensessname_${PPID}.tmp";
+	
+	# Clear screen and create requested session:
+	clear;
+	screen -S "${MainLabel}"
+
+}
+
+
+function joinSession {
+
+	# Clear screen and attach to selected session:
+	clear;
+	screen -rd ${MainPID};
+
+}
+
+
+
+# Mandanga core:
+while
+	scrSelect MainPID \
 	&& (
-		# Read selected screen PID from temporary file:
-		MainPID=$(cat "${TmpDir}/screenlist_${PPID}.tmp");
-		rm "${TmpDir}/screenlist_${PPID}.tmp";
-
 		# Check for New Session Option:
-		if (test "${MainPID}" = "----") then
+		if (
 			# (New Session requested)
+			test "${MainPID}" = "----"
+		) then
+			newSession
+		else # (Normal operation)
 
-			# Require label for new session:
-			dialog --form "${LabelEditTitle}: " "${LabelEditWHeight}" "${LabelEditWWidth}" "${LabelEditHeight}" "${LabelEditLabel}" "${LabelEditY1}" "${LabelEditX1}" "${LabelEditDefVal}" "${LabelEditY2}" "${LabelEditX2}" "${LabelEditFlen}" "${LabelEditIlen}" 2> "${TmpDir}/screensessname_${PPID}.tmp"
+			joinSession
 
-			# Read label from temporary file:
-			MainLabel=$(cat "${TmpDir}/screensessname_${PPID}.tmp");
-			rm "${TmpDir}/screensessname_${PPID}.tmp";
-			
-			# Clear screen and create requested session:
-			clear;
-			screen -S "${MainLabel}"
-		else
-			# (Normal operation)
-
-			# Clear screen and attach to selected session:
-			clear;
-			screen -rd ${MainPID};
 		fi;
 	);
 do
