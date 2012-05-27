@@ -1,0 +1,78 @@
+#!/bin/bash
+
+TmpDir=/tmp
+[[ -n $TEMP ]] && TmpDir=$TEMP;
+[[ -n $TMP ]] && TmpDir=$TMP;
+
+ScreenHeight=20;
+[[ $LINES -ge 20 ]] && ScreenHeight=$LINES;
+let Margin=LINES/4
+
+BackTitle="Sessions actives"
+MenuTitle="${USER}@$(hostname)"
+MenuNewSessLbl="Nova sessió"
+let MenuWHeight=$ScreenHeight-5-$Margin
+MenuWWidth=70
+let MenuHeigth=$MenuWHeight-5
+
+LabelEditTitle="Etiqueta per a la nova sessió"
+LabelEditLabel="Etiqueta"
+LabelEditWHeight=11
+LabelEditWWidth=70
+LabelEditHeight=3
+LabelEditY1=2
+LabelEditX1=5
+LabelEditDefVal=""
+LabelEditY2=2
+LabelEditX2=15
+LabelEditFlen=45
+LabelEditIlen=80
+
+#CustomOptions="--colors"
+CustomOptions=""
+
+
+# Mandanga core:
+while
+	(echo "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
+		\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
+		$(
+			# List running screen sessions.
+			# Discarding '.vim_' preffixed.
+			# Then extract pid and format label.
+			screen -ls \
+			| grep -v '\.vim_' \
+			| perl -ne 's/^\s*(\d+)\.(\w.*?)\s*(\(\w+\))\s*$/\1 "\3 \2" /&&print' 2>/dev/null
+		) \
+		\"----\" \"${MenuNewSessLbl}\"" | bash
+	) 2> "${TmpDir}/screenlist_${PPID}.tmp" \
+	&& (
+		# Read selected screen PID from temporary file:
+		MainPID=$(cat "${TmpDir}/screenlist_${PPID}.tmp");
+		rm "${TmpDir}/screenlist_${PPID}.tmp";
+
+		# Check for New Session Option:
+		if (test "${MainPID}" = "----") then
+			# (New Session requested)
+
+			# Require label for new session:
+			dialog --form "${LabelEditTitle}: " "${LabelEditWHeight}" "${LabelEditWWidth}" "${LabelEditHeight}" "${LabelEditLabel}" "${LabelEditY1}" "${LabelEditX1}" "${LabelEditDefVal}" "${LabelEditY2}" "${LabelEditX2}" "${LabelEditFlen}" "${LabelEditIlen}" 2> "${TmpDir}/screensessname_${PPID}.tmp"
+
+			# Read label from temporary file:
+			MainLabel=$(cat "${TmpDir}/screensessname_${PPID}.tmp");
+			rm "${TmpDir}/screensessname_${PPID}.tmp";
+			
+			# Clear screen and create requested session:
+			clear;
+			screen -S "${MainLabel}"
+		else
+			# (Normal operation)
+
+			# Clear screen and attach to selected session:
+			clear;
+			screen -rd ${MainPID};
+		fi;
+	);
+do
+	clear;
+done;

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+vim -r $((find $1 -iname '.*.sw?'; find $1 -iname '.sw?') | perl -pe 's/(.*)\/\.(.*)\.swp.*$/\1\/\2/' | xargs)
