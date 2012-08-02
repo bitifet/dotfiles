@@ -1,0 +1,6 @@
+Compillation of miscellaneous personal scripts:
+==============================================
+
+	* scl: (Not really) first version of scl (SCreen List) screen session management script.
+	* vimrecover: Shorthand for recursively recover related files of all vim swapfiles in a tree.
+
