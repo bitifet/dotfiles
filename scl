@@ -36,18 +36,21 @@ function scrSelect {
 	#{{{
 	MenuTitle="Sessions actives per ${USER}@$(hostname)"
 
-	(echo "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
+	# List running screen sessions.
+	# Discarding '.vim_' preffixed.
+	# Then extract pid and format label.
+	OptList=$(screen -ls \
+	| grep -v '\.vim_' \
+	| perl -ne 's/^\s*(\d+)\.(\w.*?)\s*(\(\w+\))\s*$/\1 "\3 \2" /&&print' 2>/dev/null
+	);
+
+
+	bash -c "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
 		\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
-		$(
-			# List running screen sessions.
-			# Discarding '.vim_' preffixed.
-			# Then extract pid and format label.
-			screen -ls \
-			| grep -v '\.vim_' \
-			| perl -ne 's/^\s*(\d+)\.(\w.*?)\s*(\(\w+\))\s*$/\1 "\3 \2" /&&print' 2>/dev/null
-		) \
-		\"----\" \"${MenuNewSessLbl}\"" | bash
-	) 2> "${TmpDir}/scrSelect ${PPID}.tmp"
+		$OptList \
+		\"----\" \"${MenuNewSessLbl}\" \
+	 2> \"${TmpDir}/scrSelect ${PPID}.tmp\""
+
 	eval $1=$(cat "${TmpDir}/scrSelect ${PPID}.tmp")
 	rm "${TmpDir}/scrSelect ${PPID}.tmp";
 	#}}}
@@ -59,42 +62,52 @@ function profileSelect {
 	#{{{
 
 
-	MenuTitle="Sel·leccioni perfil"
+	if ( [ -d ${ScreenProfilePath} ] ) then
+		MenuTitle="Sel·leccioni perfil"
 
-	(echo "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
-		\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
-		$((
-			pushd ${ScreenProfilePath} &> /dev/null
-			# Named (and not running) profiles:
-			for tpl in *.screentpl; do
-				if ( \ 
-					[ $( \
-						screen -ls | grep -c "$(cat ${tpl} | grep -Ei '^sessionname .' | perl -pe 's/^\w+\s.//;s/.$//')" \
-					) -eq 0 \
-					] \
-				) then
-					echo \"$(echo ${tpl} | perl -pe 's/\.screentpl$//')\" \"$(grep -Ei '^sessionname .' ${tpl} | perl -pe 's/^\w+//')\";
-				fi;
-			done 2>/dev/null;
-			# Unnamed (generic) profiles:
-			for tpl in *.screentpl; do
-				if ( \ 
-					[ "$( \
-						cat ${tpl} | grep -c -Ei '^sessionname .' \
-					)" -eq 0 \
-					]
-				) then
-				echo \"$(echo ${tpl} | perl -pe 's/\.screentpl$//')\" \"---Perfil---\";
-				fi;
-			done 2>/dev/null;
-			popd &> /dev/null
-		) | xargs) \
-		\"----\" \"${MenuNewSessLbl}\"" | bash
-	) 2> "${TmpDir}/profSelect ${PPID}.tmp"
+		pushd ${ScreenProfilePath} &> /dev/null
+
+		bash -c "dialog ${CustomOptions} --backtitle \"${BackTitle}\" --menu \"${MenuTitle}:\" \
+			\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
+			$((
+				# Named (and not running) profiles:
+				for tpl in *.screentpl; do
+					if ( \ /*{{{*//*}}}*/
+						[ $( \
+							screen -ls | grep -c "$(cat ${tpl} | grep -Ei '^sessionname .' | perl -pe 's/^\w+\s.//;s/.$//')" \
+						) -eq 0 \
+						] \
+					) then
+						echo \"$(echo ${tpl} | perl -pe 's/\.screentpl$//')\" \"$(grep -Ei '^sessionname .' ${tpl} | perl -pe 's/^\w+//')\";
+					fi;
+				done 2>/dev/null;
+				# Unnamed (generic) profiles:
+				for tpl in *.screentpl; do
+					if ( \ 
+						[ "$( \
+							cat ${tpl} | grep -c -Ei '^sessionname .' \
+						)" -eq 0 \
+						]
+					) then
+					echo \"$(echo ${tpl} | perl -pe 's/\.screentpl$//')\" \"---Perfil---\";
+					fi;
+				done 2>/dev/null;
+			) | xargs) \
+			\"----\" \"${MenuNewSessLbl}\" \
+		 2> \"${TmpDir}/profSelect_${PPID}.tmp\" "
 
 
-	eval $1=$(cat "${TmpDir}/profSelect ${PPID}.tmp")
-	rm "${TmpDir}/profSelect ${PPID}.tmp";
+
+		popd &> /dev/null
+
+		eval $1=$(cat "${TmpDir}/profSelect_${PPID}.tmp")
+		rm "${TmpDir}/profSelect_${PPID}.tmp";
+
+	else
+
+		eval $1="----"
+
+	fi;
 
 
 	#}}}
@@ -133,7 +146,7 @@ function newSession {
 		[ -n "${MainLabel}" ]
 	) then
 		clear;
-		screen -S "${MainLabel}"
+		script /dev/null -c "screen -S \"${MainLabel}\""
 	else
 		newSession; # Retry.
 	fi;
@@ -147,7 +160,7 @@ function joinSession {
 	# Clear screen and attach to selected session:
 	if ( [ -n "${MainPID}" ] ) then
 		clear;
-		screen -rd ${MainPID};
+		script /dev/null -c "screen -rd \"${MainPID}\"";
 	else
 		exit 1
 	fi;
