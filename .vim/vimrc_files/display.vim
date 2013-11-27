@@ -1,4 +1,7 @@
 set so=2 " Minimum visible rows arround cursor.
+set wrap
+set encoding=utf-8
+set ffs=unix,dos,mac "Default file types
 
 " [F9]: Redraw!"{{{
 :map <f9> :redraw!<cr>

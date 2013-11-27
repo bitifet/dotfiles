@@ -11,6 +11,8 @@ set foldmethod=marker
 :map ZZ u<c-r>zMzx
 "}}}
 
+" Xml fold:
+"au BufNewFile,BufRead *.xml,*.htm,*.html so ~/.vim/plugin/XMLFolding.vim
 
 "set foldtext=MyFoldText()
 "function! MyFoldText()
