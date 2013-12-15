@@ -1,10 +1,9 @@
 
-set foldmethod=marker
+au BufEnter * set foldmethod=marker
 
 " Folding:
 " Fold "simple" function:
 :map z% <esc>:s/\s*$//<return>V$%zf
-
 
 " ZZ -> Go to last change position, fold all and unfold up to cursor row:"{{{
 " (also avoid default ZZ behaviour)

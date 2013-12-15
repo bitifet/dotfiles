@@ -11,9 +11,13 @@ map t :tabn<cr>
 "imap <c-t> <esc>:tabn<cr>
 " }}}
 
-" Splits:"{{{
-nmap <c-l> <c-w>k
-nmap <c-h> <c-w>j
+" Windows:"{{{
+" (tmux-pane-like window shortcuts)
+nmap <c-w>- <c-w><c-s>
+nmap <c-w>\| <c-w><c-v>
+nmap <c-w>! <c-w>o
+noremap <c-w>K <c-w>-
+noremap <c-w>J <c-w>+
 "}}}
 
 " Text blocks:{{{
