@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Attach current session or create new one if any.
+tmux attach || tmux

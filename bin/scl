@@ -14,7 +14,7 @@ let MenuWHeight=$ScreenHeight-5-$Margin
 MenuWWidth=70
 let MenuHeigth=$MenuWHeight-5
 
-BackTitle="SuperScreen"
+BackTitle="SuperScreen - [DEPRECATED] Better use tmux and (optionally) tml shorcut."
 LabelEditTitle="Etiqueta per a la nova sessió"
 LabelEditLabel="Etiqueta"
 LabelEditWHeight=11
