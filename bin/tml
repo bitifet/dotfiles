@@ -37,4 +37,7 @@ elif [[ -n "${TMUX}" ]]; then
 fi;
 
 # Attach current session or create new one if any.
-tmux attach || tmux
+while true; do
+	tmux attach || tmux
+	if dialog --yesno "Exit tml?" 5 20; then break; fi
+done;
