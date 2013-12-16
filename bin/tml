@@ -1,4 +1,40 @@
 #!/bin/bash
 
+ProfilePath=~/.config/tmux
+SessName="${1}"
+
+if [[ -n "${SessName}" ]]; then
+
+	file="${ProfilePath}/${SessName}.tmux"
+
+	# Check that session-file exists:
+	if [[ ! -f $file ]]; then
+		echo "ERROR: ${file} does'nt exist.";
+		exit 1;
+	fi;
+
+	# Start session only if not already opened:
+	if [[ -z $(tmux ls | sed 's/:.*//' | grep "^${SessName}$") ]]; then
+		TMS=$TMUX
+		TMUX=""
+		#tmux -f "${file}" new-session -s "${SessName}" -d
+		tmux new-session -s "${SessName}" -d
+		tmux switch-client -t "${SessName}"
+		tmux source-file "${file}"
+		TMUX=$TMS
+		TMS=""
+	else
+		# Only switch to session:
+		tmux switch-client -t "${SessName}"
+	fi;
+
+	exit 0
+
+
+elif [[ -n "${TMUX}" ]]; then
+	ls $ProfilePath | perl -ne 's/.tmux$//&&print';
+	exit 0
+fi;
+
 # Attach current session or create new one if any.
 tmux attach || tmux
