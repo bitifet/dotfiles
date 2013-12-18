@@ -5,10 +5,10 @@ nmap ygip yiwgip
 "}}}
 
 " Tabs: {{{
-map T :tabp<cr>
-map t :tabn<cr>
-"imap <c-T> <esc>:tabp<cr>
-"imap <c-t> <esc>:tabn<cr>
+map <c-h> :tabp<enter>
+map <c-l> :tabn<enter>
+imap <c-h> <esc>:tabp<enter>
+imap <c-l> <esc>:tabn<enter>
 " }}}
 
 " Windows:"{{{
