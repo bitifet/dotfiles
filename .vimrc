@@ -3,6 +3,7 @@ autocmd!
 set ignorecase
 "set verbose=9
 
+so ~/.vim/vimrc_files/colors.vim
 so ~/.vim/vimrc_files/addons.vim
 so ~/.vim/vimrc_files/display.vim
 so ~/.vim/vimrc_files/folding.vim
