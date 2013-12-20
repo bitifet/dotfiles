@@ -3,17 +3,20 @@
 ProfilePath=~/.config/tmux
 SessName="${1}"
 
+# tml <profileName>: Start/switch_to session.#{{{
+# ===========================================
 if [[ -n "${SessName}" ]]; then
 
 	file="${ProfilePath}/${SessName}.tmux"
 
-	# Check that session-file exists:
+	# Check that session-profile exists:#{{{
 	if [[ ! -f $file ]]; then
 		echo "ERROR: ${file} does'nt exist.";
 		exit 1;
 	fi;
+	#}}}
 
-	# Start session only if not already opened:
+	# Start session only if not already opened:#{{{
 	if [[ -z $(tmux ls | sed 's/:.*//' | grep "^${SessName}$") ]]; then
 		TMS=$TMUX
 		TMUX=""
@@ -23,21 +26,43 @@ if [[ -n "${SessName}" ]]; then
 		tmux source-file "${file}"
 		TMUX=$TMS
 		TMS=""
-	else
-		# Only switch to session:
+	#}}}
+
+	else # Only switch to session:#{{{
 		tmux switch-client -t "${SessName}"
 	fi;
+	#}}}
 
-	exit 0
+# ===========================================#}}}
 
-
+# tml (with no parameters) inside tmux: List available profiles.#{{{
+# ==============================================================
 elif [[ -n "${TMUX}" ]]; then
+
+	# Ensure $ProfilePath directory exists:#{{{
+	if [[ ! -d $ProfilePath ]]; then
+		mkdir -p $ProfilePath;
+	fi;
+	#}}}
+	# List profiles and exit:#{{{
 	ls $ProfilePath | perl -ne 's/.tmux$//&&print';
 	exit 0
-fi;
+	#}}}
 
-# Attach current session or create new one if any.
-while true; do
-	tmux attach || tmux
-	if dialog --yesno "Exit tml?" 5 20; then break; fi
-done;
+# ==============================================================#}}}
+
+# tml (outside tmux): Attach (creating session if needed).#{{{
+# ========================================================
+else
+	# Attach current session or create new one if any.
+	while true; do
+		tmux attach || tmux
+		if dialog --yesno "Exit tml?" 5 20; then break; fi
+	done;
+fi;
+# ========================================================#}}}
+
+# Success:
+exit 0
+
+
