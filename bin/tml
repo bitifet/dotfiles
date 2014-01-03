@@ -1,68 +1,119 @@
 #!/bin/bash
 
+# Parameters:#{{{
+# ===========
 ProfilePath=~/.config/tmux
-SessName="${1}"
 
-# tml <profileName>: Start/switch_to session.#{{{
-# ===========================================
-if [[ -n "${SessName}" ]]; then
+TmpDir=/tmp
+#CustomOptions="--colors"
+CustomOptions=""
+# ===========#}}}
 
-	file="${ProfilePath}/${SessName}.tmux"
 
-	# Check that session-profile exists:#{{{
-	if [[ ! -f $file ]]; then
-		echo "ERROR: ${file} does'nt exist.";
-		exit 1;
+# Labels:#{{{
+# =======
+BackTitle="TMux List"
+ReconnectLbl="Reconnectar..."
+# =======#}}}
+
+
+# Dimensions:#{{{
+# ===========
+ScreenHeight=20;
+[[ $LINES -ge 20 ]] && ScreenHeight=$LINES;
+let Margin=LINES/4
+
+let MenuWHeight=$ScreenHeight-5-$Margin
+MenuWWidth=70
+let MenuHeigth=$MenuWHeight-5
+# ===========#}}}
+
+
+function profileSelect {
+	#{{{
+
+	if ( [ -d ${ProfilePath} ] ) then
+		MenuTitle="Sel·leccioni perfil"
+
+		# Build Profile list:#{{{
+		profileList=$( 
+			for tpl in $(
+				ls $ProfilePath | perl -ne 's/.tmux$//&&print'
+			); do
+
+				lbl=$(
+					cat "${ProfilePath}/${tpl}.tmux" |
+					grep -Ei '^# label:' |
+					head -n 1 |
+					perl -pe 's/^# label:\s*//i'
+				);
+				if [ -z "${lbl}" ]; then
+					lbl="${tpl}";
+				fi;
+
+				echo -n " \"$tpl\" \"$lbl\"";
+			done 2>/dev/null;
+		);#}}}
+
+		# Show dialog:#{{{
+		bash -c "dialog ${CustomOptions} \
+			--backtitle \"${BackTitle}\" \
+			--menu \"${MenuTitle}:\" \
+			\"${MenuWHeight}\" \"${MenuWWidth}\" \"${MenuHeigth}\" \
+			\"----\" \"${ReconnectLbl}\" \
+			$profileList \
+		2> \"${TmpDir}/profSelect_${PPID}.tmp\" "
+		#}}}
+
+		# Capture result:#{{{
+		eval $1=$(cat "${TmpDir}/profSelect_${PPID}.tmp")
+		rm "${TmpDir}/profSelect_${PPID}.tmp";
+		#}}}
+
+	else
+
+		eval $1="----"
+
 	fi;
+
+
 	#}}}
+}
 
-	# Start session only if not already opened:#{{{
-	if [[ -z $(tmux ls | sed 's/:.*//' | grep "^${SessName}$") ]]; then
-		TMS=$TMUX
-		TMUX=""
-		#tmux -f "${file}" new-session -s "${SessName}" -d
-		tmux new-session -s "${SessName}" -d
-		tmux switch-client -t "${SessName}"
-		tmux source-file "${file}"
-		TMUX=$TMS
-		TMS=""
-	#}}}
 
-	else # Only switch to session:#{{{
-		tmux switch-client -t "${SessName}"
-	fi;
-	#}}}
+while profileSelect profileId; do
 
-# ===========================================#}}}
 
-# tml (with no parameters) inside tmux: List available profiles.#{{{
-# ==============================================================
-elif [[ -n "${TMUX}" ]]; then
+	if [ "${profileId}" == "----" ]; then
 
-	# Ensure $ProfilePath directory exists:#{{{
-	if [[ ! -d $ProfilePath ]]; then
-		mkdir -p $ProfilePath;
-	fi;
-	#}}}
-	# List profiles and exit:#{{{
-	ls $ProfilePath | perl -ne 's/.tmux$//&&print';
-	exit 0
-	#}}}
-
-# ==============================================================#}}}
-
-# tml (outside tmux): Attach (creating session if needed).#{{{
-# ========================================================
-else
-	# Attach current session or create new one if any.
-	while true; do
+		# Attach current session if any or create new one:
 		tmux attach || tmux
-		if dialog --yesno "Exit tml?" 5 20; then break; fi
-	done;
-fi;
-# ========================================================#}}}
 
-# Success:
-exit 0
+	elif [ -n "${profileId}" ]; then
 
+		file="${ProfilePath}/${profileId}.tmux"
+
+		# Check that session-profile exists:#{{{
+		if [[ ! -f $file ]]; then
+			echo "ERROR: ${file} does'nt exist.";
+			exit 1;
+		fi;
+		#}}}
+
+		# Start session:#{{{
+		tmux new-session -s "${profileId}" -d
+	#	tmux switch-client -t "${profileId}"
+		tmux source-file "${file}"
+		tmux attach
+		#}}}
+
+		# FIXME!! Detect when session creation fails.
+
+	else
+		exit 0;
+	fi;
+
+done;
+
+exit 0;
 
