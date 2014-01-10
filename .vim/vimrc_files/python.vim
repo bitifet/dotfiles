@@ -1,11 +1,12 @@
 " Author: John Anderson (sontek@gmail.com)
 " Modificacions: Antoni Aloy (aaloy@apsl.net)
 " Modifications: Joan Miquel Torres (joanmiquel@mallorcaweb.net)
-" Afegit : http://github.com/skyl/vim-config-python-ide/blob/supertab/.vimrc
-" Afegit : http://code.google.com/p/pycopia/source/browse/trunk/vim/vimfiles/vimrc.vim
+" Added: http://github.com/skyl/vim-config-python-ide/blob/supertab/.vimrc
+" Added: http://code.google.com/p/pycopia/source/browse/trunk/vim/vimfiles/vimrc.vim
 " Tested with vim7
 "
-" 5/04/2010 - Added tComment from http://www.vim.org/scripts/script.php?script_id=1173 "           - Added better tab completion (test shift+tab)
+" 5/04/2010 - Added tComment from http://www.vim.org/scripts/script.php?script_id=1173 "
+"           - Added better tab completion (test shift+tab)
 "           - Added markdown syntax
 "           - Added additional colour themes
 " 5/04/2010 - Merged with http://amix.dk/vim/vimrc.html
