@@ -9,6 +9,10 @@
 "      http://breu.bulma.net/?l16943
 "      (Googled. Original runpaint.com link is broken :-/)
 "    * Other contributions credits in its own script heading.
+" Other credits:
+"    (Syntax files & plugins included in my personal git home repo)
+"    * Markdown: https://github.com/tpope/vim-markdown.git
+"
 
 autocmd!
 
