@@ -32,7 +32,9 @@ imap <enter><del><del> "<enter>. "
 map <c-t> yyp:s/[:\s<space>]*$//<enter>0/[^\/\*\- \"]<enter>v$?\w<enter>r
 "}}}
 
-
+" <ESC><ESC> resets highithed text (after search):"{{{
+nmap <esc><esc> :noh<enter>
+"}}}
 
 " Insert mode mappings:
 " """""""""""""""""""""
