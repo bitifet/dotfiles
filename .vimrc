@@ -34,3 +34,12 @@ so ~/.vim/vimrc_files/mappings.vim
 so ~/.vim/vimrc_files/112.vim
 so ~/.vim/vimrc_files/python.vim
 so ~/.vim/vimrc_files/oldStuff.vim
+
+
+" ============ "
+" Useful setup "
+" ============ "
+" Surround: :helptags ~/.vim/doc
+"
+" ============ "
+"
