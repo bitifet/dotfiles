@@ -21,8 +21,8 @@ noremap <c-w>J <c-w>+
 "}}}
 
 " Text blocks:{{{
-map <c-j> /^\s*$<enter>
-map <c-k> ?^\s*$<enter>
-imap <c-j> <esc>/^\s*$<enter>a
-imap <c-k> <esc>?^\s*$<enter>a
+map <c-j> /^\s*$<enter>:noh<enter>
+map <c-k> ?^\s*$<enter>:noh<enter>
+imap <c-j> <esc>/^\s*$<enter>:noh<enter>a
+imap <c-k> <esc>?^\s*$<enter>:noh<enter>a
 "}}}
