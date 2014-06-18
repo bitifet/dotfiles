@@ -2,6 +2,10 @@
 "Miscellaneous mappings:
 """"""""""""""""""""""""
 
+" File name heading with ff:"{{{
+nmap ff <esc>ggO<esc>cc// <c-r>%<esc>yypwv$r=0j
+"}}}
+
 "Indentation: {{{
 set tabstop=3
 set shiftwidth=3

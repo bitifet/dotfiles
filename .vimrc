@@ -43,3 +43,5 @@ so ~/.vim/vimrc_files/oldStuff.vim
 "
 " ============ "
 "
+filetype plugin indent on
+syntax on
