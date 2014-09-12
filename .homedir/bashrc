@@ -1,2 +1,3 @@
 [ -z "$TMUX" ] && export TERM=xterm-256color
 set -o vi
+alias less="less -R"
