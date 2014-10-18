@@ -1,2 +1,6 @@
 [ -z "$TMUX" ] && export TERM=xterm-256color
 set -o vi
+
+
+# lsd -ls downloads:
+alias lsd="ls -lht ~/Baixades/ | head"
