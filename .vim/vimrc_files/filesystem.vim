@@ -1,7 +1,21 @@
 
+" lsb for bufexplorer (in current/new tab):
+nmap bls \be
+nmap tbls :tabe<cr>\be
+
+" buffer change "undo":
+nmap bu :buf<space>#<cr>
+
+
+" ls to open current file's directory (in current/new tab):
+nmap ls :e<space>%:h<cr>
+nmap tls :tabe<space>%:h<cr>
+
+
+
 " gf in tabs:
-map gf :tabedit <cfile><CR>
-map Gf :tabedit <cfile><tab><CR>
+"map gf :tabedit<space><cfile><CR>
+"map Gf :tabedit<space><cfile><tab><CR>
 
 " [F2]: Open current dir. Shift=>In new tab. Ctrl=>Open current file's directory.
 map <F2> :e .<cr>
