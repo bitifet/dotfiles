@@ -1,5 +1,6 @@
 
 au BufEnter * set foldmethod=marker
+au BufEnter *.otl set foldmethod=expr
 
 " Folding:
 " Fold "simple" function:
