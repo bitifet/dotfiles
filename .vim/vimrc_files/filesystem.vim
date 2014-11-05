@@ -1,6 +1,6 @@
 
 " gf in tabs:
-map çgf :tabedit<space><cfile><CR>
+map ñgf :tabedit<space><cfile><CR>
 "??? map Gf :tabedit<space><cfile><tab><CR>
 
 
