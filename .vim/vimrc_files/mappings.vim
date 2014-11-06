@@ -40,6 +40,16 @@ map <c-t> yyp:s/[:\s<space>]*$//<enter>0/[^\/\*\- \"]<enter>v$?\w<enter>r
 nmap <esc><esc> :noh<enter>
 "}}}
 
+" ,, Convert common '|' separated SQL output to comma-separted list."{{{
+" (suitable as other SQL input, like column names)
+" """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+nmap ,, :s/\s*\|\s*/,<space>/g<enter>:noh<enter>
+" Same in visual mode, but multiline:
+vmap ,, :s/[<space>\n]*\|[<space>\n]*/,<space>/g<enter>:noh<enter>
+" """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""}}}
+
+
+
 " Insert mode mappings:
 " """""""""""""""""""""
 
