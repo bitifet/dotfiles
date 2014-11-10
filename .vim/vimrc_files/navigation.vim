@@ -29,12 +29,16 @@ map ñl :tabn<enter>
 " ------------------------
 " hjkl - jk (down - up)
 " k: New tab (Open tab with netrw in current file directory.
+" K: New tab (with unnamed emtpy buffer)
 " j: Switch buffer (Requires bufexplorer plugin)
 " J: New buffer (Open netrw in current window)
 " ------------------------
 nmap ñk :tabe<space>%:p:h<cr>
+nmap ñK :tabe<cr>
+nmap ÑK :tabe<cr>
 nmap ñj \be
 nmap ñJ :e<space>%:p:h<cr>
+nmap ÑJ :e<space>%:p:h<cr>
    imap <c-ñ>k <esc>:tabe<space>%:p:h<cr>
    imap <c-ñ>j <esc>\be
    imap <c-ñ>J :e<space>%:p:h<cr>
