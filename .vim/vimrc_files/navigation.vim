@@ -14,34 +14,33 @@ imap <c-k> <esc>?^\s*$<enter>:noh<enter>a
 " ===========
 " ñ-commands:
 " ===========
-" Buffer and tab management.
+" ñ: Buffer and tab management.
 
 " ------------------------
+" (ñ)
 " hjkl - hl (left - right)
 " Tab-Left - Tab-Right
 " ------------------------
 map ñh :tabp<enter>
 map ñl :tabn<enter>
-   imap <c-ñ>h <esc>:tabp<enter>
-   imap <c-ñ>l <esc>:tabn<enter>
 
 
 " ------------------------
+" (ñ)
 " hjkl - jk (down - up)
-" k: New tab (Open tab with netrw in current file directory.
-" K: New tab (with unnamed emtpy buffer)
-" j: Switch buffer (Requires bufexplorer plugin)
-" J: New buffer (Open netrw in current window)
+" (Up) - New tab:
+"   k: Netrw in current file directory.
+"   K: Unnamed emtpy buffer.
+" (Down) - Switch buffer (in current tab):
+"   j: Open bufexplorer (Requires bufexplorer plugin)
+"   J: Netrw in current file directory.
+"   (TODO) JJ: New unnamed buffer.
+"   J%: (Hint) New nammed buffer (will be asked).
 " ------------------------
 nmap ñk :tabe<space>%:p:h<cr>
 nmap ñK :tabe<cr>
-nmap ÑK :tabe<cr>
 nmap ñj \be
 nmap ñJ :e<space>%:p:h<cr>
-nmap ÑJ :e<space>%:p:h<cr>
-   imap <c-ñ>k <esc>:tabe<space>%:p:h<cr>
-   imap <c-ñ>j <esc>\be
-   imap <c-ñ>J :e<space>%:p:h<cr>
 
 
 " ------------------------
@@ -52,39 +51,47 @@ nmap ñu :buf<space>#<cr>
 
 
 " ==========
-" ç commands
+" Ñ-commands
 " ==========
-" Window mangement.
+" Ñ: Window management.
 
 " --------------------------------
 " tmux-pane-like window shortcuts:
 " --------------------------------
 
-" Split (h/v):
-nmap ç- <c-w><c-s>
-nmap ç\| <c-w><c-v>
+" ------------------------
+" Split (horizntally / vertically):
+" Same file: '-' / '|' (tmux-like)
+" New buffer: '_' / '!'
+" Netrw in current file directory: '__' / '!!'
+" ------------------------
+set splitright
+set splitbelow
+nmap Ñ- <c-w><c-s>
+nmap Ñ_ :new<enter>
+nmap Ñ__ Ñ_ñJ
+nmap Ñ\| <c-w><c-v>
+nmap Ñ! :vnew<enter>
+nmap Ñ!! Ñ!ñJ
 
 " Close (current / all other) windows:
-nmap çx <c-w>c
-nmap ç! <c-w>o
+nmap Ñx <c-w>c
+nmap ÑX <c-w>o
 
 " Window navigation (hjkl)
-nmap çh <c-w>h
-nmap çj <c-w>j
-nmap çk <c-w>k
-nmap çl <c-w>l
+nmap Ñh <c-w>h
+nmap Ñj <c-w>j
+nmap Ñk <c-w>k
+nmap Ñl <c-w>l
 
 " Window resizing (hjkl)
-nmap çH :vertical<space>resize<space>-1<enter>
-	nmap ÇH :vertical<space>resize<space>-1<enter>
-nmap çJ :resize<space>+1<enter>
-	nmap ÇJ :resize<space>+1<enter>
-nmap çK :resize<space>-1<enter>
-	nmap ÇK :resize<space>-1<enter>
-nmap çL :vertical<space>resize<space>+1<enter>
-	nmap ÇL :vertical<space>resize<space>+1<enter>
+nmap ÑH :vertical<space>resize<space>-1<enter>
+nmap ÑJ :resize<space>+1<enter>
+nmap ÑK :resize<space>-1<enter>
+nmap ÑL :vertical<space>resize<space>+1<enter>
 " HINT: Tmux config to make resizing repeatable:
 " -----------------------------------------------
+" FIXME!! (update me)
 " # Resize:
 " bind -r M-h send-keys çH
 " bind -r M-j send-keys çJ
