@@ -91,12 +91,12 @@ nmap ÑK :resize<space>-1<enter>
 nmap ÑL :vertical<space>resize<space>+1<enter>
 " HINT: Tmux config to make resizing repeatable:
 " -----------------------------------------------
-" FIXME!! (update me)
 " # Resize:
-" bind -r M-h send-keys çH
-" bind -r M-j send-keys çJ
-" bind -r M-k send-keys çK
-" bind -r M-l send-keys çL
+" # (Repeatable) Resize with Meta-hjkl:
+" bind -r M-h send-keys ÑH
+" bind -r M-j send-keys ÑJ
+" bind -r M-k send-keys ÑK
+" bind -r M-l send-keys ÑL
 " -----------------------------------------------
 
 
