@@ -44,9 +44,14 @@ nmap ñJ :e<space>%:p:h<cr>
 
 
 " ------------------------
-" ñu - Buffer change undo / switch.
+"  Miscellaneous
 " ------------------------
+
+" ñu - Buffer change undo / switch.
 nmap ñu :buf<space>#<cr>
+
+" gf in tabs:
+nmap ñgf :tabedit<space><cfile><CR>
 
 
 
@@ -64,15 +69,18 @@ nmap ñu :buf<space>#<cr>
 " Same file: '-' / '|' (tmux-like)
 " New buffer: '_' / '!'
 " Netrw in current file directory: '__' / '!!'
+" "Goto File" (gf): Ñgf / ÑgF
 " ------------------------
-set splitright
 set splitbelow
 nmap Ñ- <c-w><c-s>
 nmap Ñ_ :new<enter>
 nmap Ñ__ Ñ_ñJ
+nmap Ñgf :new<space><cfile><CR>
+set splitright
 nmap Ñ\| <c-w><c-v>
 nmap Ñ! :vnew<enter>
 nmap Ñ!! Ñ!ñJ
+nmap ÑgF :vnew<space><cfile><CR>
 
 " Close (current / all other) windows:
 nmap Ñx <c-w>c
