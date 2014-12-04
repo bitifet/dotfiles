@@ -107,24 +107,3 @@ nmap ÑL :vertical<space>resize<space>+1<enter>
 " bind -r M-l send-keys ÑL
 " -----------------------------------------------
 
-
-" ==========
-" Old stuff:
-" ==========
-
-" Tabs: {{{
-"map <c-h> :tabp<enter>
-"map <c-l> :tabn<enter>
-"imap <c-h> <esc>:tabp<enter>
-"imap <c-l> <esc>:tabn<enter>
-" }}}
-
-" Windows:"{{{
-" (tmux-pane-like window shortcuts)
-"nmap <c-w>- <c-w><c-s>
-"nmap <c-w>\| <c-w><c-v>
-"nmap <c-w>! <c-w>o
-"noremap <c-w>K <c-w>-
-"noremap <c-w>J <c-w>+
-"}}}
-
