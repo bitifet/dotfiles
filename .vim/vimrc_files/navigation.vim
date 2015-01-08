@@ -53,6 +53,13 @@ nmap ñu :buf<space>#<cr>
 " gf in tabs:
 nmap ñgf :tabedit<space><cfile><CR>
 
+" ñy "Cross-session" yank.
+noremap ñy :w!<space>~/.vim/clipboard.txt<enter>
+
+" ñp "Cross-session" paste.
+noremap ñp :r<space>~/.vim/clipboard.txt<enter>
+
+
 
 
 " ==========
