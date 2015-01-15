@@ -2,6 +2,7 @@ set so=2 " Minimum visible rows arround cursor.
 set wrap
 set encoding=utf-8
 set ffs=unix,dos,mac "Default file types
+set showtabline=2 "Remember which file is opened having multiple sessions.
 
 " [F9]: Redraw!"{{{
 :map <f9> :redraw!<cr>
