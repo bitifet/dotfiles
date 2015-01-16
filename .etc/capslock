@@ -1,0 +1,11 @@
+#!/bin/bash
+exit
+## Script disabled because of using gnome.
+
+/usr/bin/xmodmap /dev/stdin <<!EOF
+! Swap caps lock and escape
+remove Lock = Caps_Lock
+keysym Escape = Caps_Lock
+keysym Caps_Lock = Escape
+add Lock = Caps_Lock
+!EOF
