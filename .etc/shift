@@ -1,0 +1,13 @@
+#!/bin/bash
+
+/usr/bin/xmodmap /dev/stdin <<!EOF
+! Swap Super_L and less (<)
+! [</>] -> Shift_R:
+!! This breaks 'z' key (???): keysym less = Shift_R
+keycode 94 = Shift_R
+add shift = Shift_R
+! Hasefroch -> [</>]:
+remove Lock = Super_L
+keycode 133 = less greater
+!EOF
+
