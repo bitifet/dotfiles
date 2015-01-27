@@ -4,6 +4,24 @@ set encoding=utf-8
 set ffs=unix,dos,mac "Default file types
 set showtabline=2 "Remember which file is opened having multiple sessions.
 
+
+"Indentation: {{{
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set autoindent
+set listchars=tab:\|-
+set list
+
+set expandtab
+au BufEnter * set expandtab
+au BufEnter *.otl set noexpandtab
+
+"}}}
+
+
+
+
 " [F9]: Redraw!"{{{
 :map <f9> :redraw!<cr>
 imap <f9> <esc><f9>a

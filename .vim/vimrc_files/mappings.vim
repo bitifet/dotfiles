@@ -6,15 +6,6 @@
 nmap ff <esc>ggO<esc>cc// <c-r>%<esc>yypwv$r=0j
 "}}}
 
-"Indentation: {{{
-set tabstop=3
-set shiftwidth=3
-set autoindent
-
-set listchars=tab:\|-
-set list
-"}}}
-
 "<enter><del> mappings for quoted strings: {{{
 "map <enter><del> a\n"<enter>. "<esc>hJxjy/\s*<enter>kP$
 "map <enter><del><del> a"<enter>. "<esc>hJxjy/\s*<enter>kP$
