@@ -1,9 +1,4 @@
 
-" <CTRL-C> Convert selection to from SQL output to CSV: {{{
-noremap <c-c> :s/^\s*/"/\|'<,'>s/\s*\|\s*/";"/g\|'<,'>s/\s*$/"/\|'<,'>g/^"[-+]*"$/d<enter>
-" Note: Initial "'<,'>" is automatically inserted by vim.
-" }}}
-
 " CSV plugin:
 au! BufNewFile,BufRead *.csv setf csv
 :let g:csv_delimiter = ";"
