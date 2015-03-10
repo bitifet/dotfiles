@@ -11,4 +11,7 @@
 nmap ,, :s/\s*\|\s*/,<space>/g<enter>:noh<enter>
 " Same in visual mode, but multiline:
 vmap ,, :s/[<space>\n]*\|[<space>\n]*/,<space>/g<enter>:noh<enter>
+
+" Same with only spaces:
+nmap ,,, :s/\s\+/,<space>/g<enter>:noh<enter>
 " """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""}}}
