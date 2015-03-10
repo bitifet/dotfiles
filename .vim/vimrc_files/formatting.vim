@@ -13,5 +13,5 @@ nmap ,, :s/\s*\|\s*/,<space>/g<enter>:noh<enter>
 vmap ,, :s/[<space>\n]*\|[<space>\n]*/,<space>/g<enter>:noh<enter>
 
 " Same with only spaces:
-nmap ,,, :s/\s\+/,<space>/g<enter>:noh<enter>
+nmap ,,, :s/\(.\)\s\+\(.\)/\1,<space>\2/g<enter>:noh<enter>
 " """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""}}}
