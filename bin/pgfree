@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Freeing disk and postgres caches..."
+
+sudo bash <<!EOF
+free
+sync
+echo 3 > /proc/sys/vm/drop_caches
+free
+/etc/init.d/postgresql restart
+!EOF
