@@ -5,6 +5,9 @@
 " Csv: (Convert selection to from SQL output to CSV)
 :command! -range Csv <line1>,<line2>:s/^\s*/"/|<line1>,<line2>:s/\s*|\s*/";"/g|<line1>,<line2>:s/\s*$/"/|<line1>,<line2>:g/^"[-+]*"$/d
 
+" Qjs: (Quote selection as javascript string)
+:command! -range Qjs <line1>,<line2>:s/^/+ "/|<line1>,<line2>:s/\s*$/\\n"/g|<line1>:s/+\s//|:noh
+
 " ,, Convert common '|' separated SQL output to comma-separted list."{{{
 " (suitable as other SQL input, like column names)
 " """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
