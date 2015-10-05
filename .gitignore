@@ -1,1 +1,10 @@
 *
+!.vimrc
+!.vim
+!.vim/*
+!.vim/*/*
+#!bin
+#!bin/*
+#**.sw?
+#**.bak
+#**.bak*
