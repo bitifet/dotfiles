@@ -1,0 +1,76 @@
+create or replace function LocFieldChecks() -- {{{
+Returns trigger
+AS $$
+DECLARE
+	foo record;
+BEGIN
+
+	if (
+		TG_OP = 'INSERT'
+	) then
+
+		-- Autofill location id to last created location if not given: {{{
+		-- If not created any location in current transaction, this will trigger an error.
+		if (NEW.Lid is null) then
+			select into NEW.Lid currval('location_lid_seq');
+		end if;
+
+		-- Autofill location type:
+		if (NEW.ltid is null) then
+			select into NEW.ltid ltid from public.Location where Lid = NEW.Lid;
+		end if;
+		-- }}}
+
+		-- Determine if named field exists for this location type:
+		FOR foo IN
+			-- Optimized if (select count(*)...):
+			select * from public.LTFieldDef where LTid = NEW.ltid and LTFDid = new.LTFDid
+			limit 1
+		LOOP
+			-- Update location mtime:
+			update public.location set mtime = now()
+			where lid = NEW.Lid
+			and coalesce (mtime, ctime) < now() - '5 sec'::interval;
+		
+
+			-- Perform insert:
+			RETURN NEW;
+		END LOOP;
+
+		-- Raise exception if field not found:
+		select into foo LTDesc from public.LocType where ltid = NEW.ltid;
+		RAISE EXCEPTION 'Wrong field for this location type (%).', foo.ltdesc;
+		RETURN NULL;
+
+
+	elsif (
+		TG_OP = 'UPDATE'
+	) then
+
+		-- Prevent row recycling:
+		if (
+			NEW.Lid <> OLD.Lid
+			or NEW.LTFDid <> OLD.LTFDid
+		) then
+			RAISE EXCEPTION 'Recycling locfield rows is forbidden.';
+			RETURN OLD;
+		end if;
+
+
+		if (
+			NEW.value <> OLD.value
+		) then
+			-- Update location mtime:
+			update public.location set mtime = now() where lid = NEW.Lid;
+		end if;
+		
+		RETURN NEW;
+
+	else -- DELETE
+			-- Update location mtime:
+			update public.location set mtime = now() where lid = OLD.Lid;
+			RETURN OLD;
+	end if;
+
+END
+$$ language plpgsql; -- }}}
