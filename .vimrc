@@ -42,5 +42,3 @@ so ~/.vim/vimrc_files/syntax.vim
 " Update help files tags:
 :helptags ~/.vim/doc
 
-filetype plugin indent on
-syntax on
