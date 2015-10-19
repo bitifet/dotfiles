@@ -31,3 +31,16 @@ cat ~/.bashrc | grep 'DotFiles Setup' > /dev/null && (
 echo "Setting vim as default editor:"
 sudo update-alternatives --set editor /usr/bin/vim.basic && echo "Ok."
 
+echo "Installing Node Version Manager (nvm):"
+if [ \! -e ~/.nvm ]; then
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.11.1/install.sh | bash
+    export NVM_DIR="/home/joanmi/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+    latestNode=$(nvm ls-remote | tail -n 1 | perl -pe 's/^\D*//');
+    echo "Installing latest Node version (${latestNode}):"
+    nvm install $latestNode
+    echo "Setting it as default version:"
+    nvm alias default $latestNode
+else
+    echo "nvm already installed."
+fi
