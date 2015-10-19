@@ -5,3 +5,5 @@ alias less="less -R"
 
 # lsd -ls downloads:
 alias lsd="ls -lht ~/Baixades/ | head"
+
+export PATH="${PATH}:~/bin"

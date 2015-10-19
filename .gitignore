@@ -3,8 +3,8 @@
 !.vim
 !.vim/*
 !.vim/*/*
+**.sw[po]
 #!bin
 #!bin/*
-#**.sw?
 #**.bak
 #**.bak*
