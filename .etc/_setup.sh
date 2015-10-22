@@ -14,7 +14,7 @@ echo -n "Enter user email: "
 read git_email
 git config --global user.name "${git_user}"
 git config --global user.email "${git_email}"
-
+git config --global push.default simple
 
 echo "================================================================"
 echo "                    - Miscellaneous Setup -"
