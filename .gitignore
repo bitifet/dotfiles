@@ -8,3 +8,8 @@
 #!bin/*
 #**.bak
 #**.bak*
+.vim/clipboard.txt
+.vim/.netrwhist
+.vim/screenrc
+
+

@@ -3,7 +3,8 @@
 echo "================================================================"
 echo "                      - Software Setup -"
 echo "================================================================"
-sudo apt-get install vim dialog screen tmux git subversion git-svn
+sudo apt-get install vim dialog screen tmux git subversion git-svn ssh
+
 
 echo "================================================================"
 echo "                         - GIT Setup -"
@@ -15,6 +16,29 @@ read git_email
 git config --global user.name "${git_user}"
 git config --global user.email "${git_email}"
 git config --global push.default simple
+
+
+echo "================================================================"
+echo "                        - NodeJS Setup -"
+echo "================================================================"
+echo "Installing Node Version Manager (nvm):"
+if [ \! -e ~/.nvm ]; then
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.11.1/install.sh | bash
+    export NVM_DIR="/home/joanmi/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+    latestNode=$(nvm ls-remote | tail -n 1 | perl -pe 's/^\D*//');
+    echo "Installing latest Node version (${latestNode}):"
+    nvm install $latestNode
+    echo "Setting it as default version:"
+    nvm alias default $latestNode
+
+    echo "Installing Miscellaneous Utilities:"
+    echo "  - Underscore..."
+    npm install -g underscore-cli
+else
+    echo "nvm already installed."
+fi
+
 
 echo "================================================================"
 echo "                    - Miscellaneous Setup -"
@@ -31,16 +55,4 @@ cat ~/.bashrc | grep 'DotFiles Setup' > /dev/null && (
 echo "Setting vim as default editor:"
 sudo update-alternatives --set editor /usr/bin/vim.basic && echo "Ok."
 
-echo "Installing Node Version Manager (nvm):"
-if [ \! -e ~/.nvm ]; then
-    curl https://raw.githubusercontent.com/creationix/nvm/v0.11.1/install.sh | bash
-    export NVM_DIR="/home/joanmi/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-    latestNode=$(nvm ls-remote | tail -n 1 | perl -pe 's/^\D*//');
-    echo "Installing latest Node version (${latestNode}):"
-    nvm install $latestNode
-    echo "Setting it as default version:"
-    nvm alias default $latestNode
-else
-    echo "nvm already installed."
-fi
+
