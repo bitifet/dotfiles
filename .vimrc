@@ -14,7 +14,7 @@
 "    * Markdown: https://github.com/tpope/vim-markdown.git
 "
 
-mapclear
+"mapclear
 autocmd!
 
 set ignorecase
