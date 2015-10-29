@@ -24,7 +24,7 @@ vmap <buffer> <f5> :'<,'>!node<space><enter>
 " Fromatted JSON thought underscore (adding "Shift" key"):
 nmap <buffer> <s-f5> :!node<space>%\|underscore<space>print<space>--color\|less<space>-R<enter>
 nmap <buffer> <a-s-f5> :silent<space>!tmux<space>split-window<space>-h<space>"node<space>%\|underscore<space>print<space>--color\|less<space>-R"<enter>
-nmap <buffer> <c-s-f6> :silent<space>!tmux<space>split-window<space>-v<space>"node<space>%\|underscore<space>print<space>--color\|less<space>-R"<enter>
+nmap <buffer> <c-s-f5> :silent<space>!tmux<space>split-window<space>-v<space>"node<space>%\|underscore<space>print<space>--color\|less<space>-R"<enter>
 vmap <buffer> <s-f5> :'<,'>!node\|underscore<space>print<enter>
 
 
