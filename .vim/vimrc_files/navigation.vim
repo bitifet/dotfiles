@@ -20,9 +20,12 @@ imap <c-k> <esc>?^\s*$<enter>:noh<enter>a
 " (ñ)
 " hjkl - hl (left - right)
 " Tab-Left - Tab-Right
+" Ctrl+... (Move)
 " ------------------------
 map ñh :tabp<enter>
 map ñl :tabn<enter>
+map ñ<c-h> :tabm<space>-1<enter>
+map ñ<c-l> :tabm<space>+1<enter>
 
 
 " ------------------------
