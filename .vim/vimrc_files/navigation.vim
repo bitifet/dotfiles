@@ -62,6 +62,8 @@ noremap ñy :w!<space>~/.vim/clipboard.txt<enter>
 " ñp "Cross-session" paste.
 noremap ñp :r<space>~/.vim/clipboard.txt<enter>
 
+" ññ Cursor row+column switch.
+nmap ññ :silent set<space>cursorline!<space>cursorcolumn!<enter>
 
 
 

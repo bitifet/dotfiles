@@ -32,6 +32,8 @@ silent !mkdir -p ~/.vim
 silent !cat ~/.screenrc > ~/.vim/screenrc 2>/dev/null
 " Bind F12 to 'detach' command in screen.
 silent !echo 'bindkey -k F2 detach' >> ~/.vim/screenrc
+" .
+silent !echo 'term xterm-256color' >> ~/.vim/screenrc
 " Change default screen's escape key to CTRL-Q to avoid conflict if vim itself is running in other screen session.
 ""silent !echo 'escape ^qa' >> ~/.vim/screenrc
 " }}}
