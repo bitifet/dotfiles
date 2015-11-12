@@ -1,4 +1,10 @@
 
+" Determine correct run command:
+let @a = ''
+let runCmd = 'node' | " Default to nodeJS (node).
+g/^\/\*\s*run:.*:\s*\*\/$/y a
+let runCmd = split(@a,":")[1]
+
 
 " <F5> Run Javascript thought Node.js:
 " ====================================
@@ -35,6 +41,10 @@ vmap <buffer> <s-f5> :'<,'>!node\|underscore<space>print<enter>
 
 
 
+:execute "nmap <buffer> <f5> :!".runCmd."<space>%\\\|less<space>-r<enter>"
+:execute "nmap <buffer> <a-f5> :silent<space>!tmux<space>split-window<space>-h<space>'".runCmd."<space>%\\\|less<space>-r'<enter>"
+:execute "nmap <buffer> <c-f5> :silent<space>!tmux<space>split-window<space>-v<space>'".runCmd."<space>%\\\|less<space>-r'<enter>"
+:execute "vmap <buffer> <f5> :'<,'>!".runCmd."<space><enter>"
 
 "
 " Requires: https://www.npmjs.com/package/underscore-cli
