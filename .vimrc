@@ -32,6 +32,7 @@ so ~/.vim/vimrc_files/csv.vim
 so ~/.vim/vimrc_files/svn.vim
 so ~/.vim/vimrc_files/mappings.vim
 so ~/.vim/vimrc_files/formatting.vim
+so ~/.vim/vimrc_files/run.vim
 
 so ~/.vim/vimrc_files/112.vim
 so ~/.vim/vimrc_files/python.vim
