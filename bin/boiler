@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+bdir="$(dirname $0)/boilerplate";
+
+if [ "$1" = "" ]; then
+    echo "Available boilerplates:"
+    for f in $(ls $bdir); do
+        "${bdir}/${f}" -h
+    done;
+    echo
+    exit;
+fi;
+
+cmd=$1
+shift
+"${bdir}/${cmd}" $@

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+HELP="Express project."
+
+if [ "$1" = "-h" ]; then
+    echo "  " $(basename $0) - $HELP
+    exit;
+fi;
+
+echo -n "Install global tools (y/N)? "
+read instGlobal
+
+if [ $instGlobal = "y" ]; then
+    npm install -g express-generator
+fi;
+
+express $@
+cd $1
+npm install
+
+
