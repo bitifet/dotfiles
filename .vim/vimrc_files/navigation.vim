@@ -65,6 +65,11 @@ noremap ñp :r<space>~/.vim/clipboard.txt<enter>
 " ññ Cursor row+column switch.
 nmap ññ :silent set<space>cursorline!<space>cursorcolumn!<enter>
 
+" ñs Always show status bar.
+nmap ñs :silent set<space>laststatus=2<enter>
+
+" ñs Only show status bar when more than one window exists.
+nmap ñS :silent set<space>laststatus=1<enter>
 
 
 " ==========
