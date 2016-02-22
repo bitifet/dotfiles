@@ -18,6 +18,7 @@
 autocmd!
 
 set ignorecase
+set nocindent
 "set verbose=9
 
 so ~/.vim/vimrc_files/colors.vim
