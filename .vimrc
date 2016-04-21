@@ -31,6 +31,7 @@ so ~/.vim/vimrc_files/filesystem.vim
 so ~/.vim/vimrc_files/screen.vim
 so ~/.vim/vimrc_files/csv.vim
 so ~/.vim/vimrc_files/svn.vim
+so ~/.vim/vimrc_files/git.vim
 so ~/.vim/vimrc_files/mappings.vim
 so ~/.vim/vimrc_files/formatting.vim
 so ~/.vim/vimrc_files/run.vim
