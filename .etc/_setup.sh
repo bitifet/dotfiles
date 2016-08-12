@@ -3,7 +3,7 @@
 echo "================================================================"
 echo "                      - Software Setup -"
 echo "================================================================"
-sudo apt-get install vim dialog screen tmux git subversion git-svn ssh
+sudo apt-get install vim dialog screen tmux git subversion git-svn ssh curl g++
 
 
 echo "================================================================"
