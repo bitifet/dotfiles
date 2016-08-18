@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+case $1 in
+    json )
+        cat | underscore print --color | less -r
+    ;;
+    * )
+        1>&2 echo "Unknown filter!!"
+        cat | less
+    ;;
+esac;
+
+
