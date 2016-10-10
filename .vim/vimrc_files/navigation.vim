@@ -11,6 +11,13 @@ imap <c-j> <esc>/^\s*$<enter>:noh<enter>a
 imap <c-k> <esc>?^\s*$<enter>:noh<enter>a
 "}}}
 
+" mm -> MM"{{{
+" mm (already, by default) creates "m" mark.
+" Now, define MM to go back to (handy) "m" mark:
+nmap MM 'm
+"}}}
+
+
 " ===========
 " ñ-commands:
 " ===========
