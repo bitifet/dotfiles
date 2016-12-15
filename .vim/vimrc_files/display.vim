@@ -3,6 +3,7 @@ set wrap
 set encoding=utf-8
 set ffs=unix,dos,mac "Default file types
 set showtabline=2 "Remember which file is opened having multiple sessions.
+:set rulerformat=%55(%F\ \ \ \ %=%c,%l/%L\ \ \ \ %P%) "Ruler with current file path
 
 
 "Indentation: {{{
@@ -16,10 +17,7 @@ set list
 set expandtab
 au BufEnter * set expandtab
 au BufEnter *.otl set noexpandtab
-
 "}}}
-
-
 
 
 " [F9]: Redraw!"{{{

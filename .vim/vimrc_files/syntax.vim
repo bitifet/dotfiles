@@ -18,3 +18,7 @@ autocmd Syntax markdown call SyntaxRange#Include('^\s*```sql\s*$', '^\s*```\s*$'
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```php\s*$', '^\s*```\s*$', 'php', 'NonText')
 "autocmd Syntax markdown call SyntaxRange#Include('^\s*```csv\s*$', '^\s*```\s*$', 'csv', 'NonText')
 
+
+" Syntax fixings:
+" ===============
+autocmd Syntax sql call set commentstring=--%s
