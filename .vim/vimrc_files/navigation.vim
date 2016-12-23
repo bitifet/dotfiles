@@ -4,11 +4,17 @@ nmap gip gi<esc>pa
 nmap ygip yiwgip
 "}}}
 
-" Text blocks:{{{
+" Text blocks skip:{{{
 map <c-j> /^\s*$<enter>:noh<enter>
 map <c-k> ?^\s*$<enter>:noh<enter>
 imap <c-j> <esc>/^\s*$<enter>:noh<enter>a
 imap <c-k> <esc>?^\s*$<enter>:noh<enter>a
+"}}}
+
+" Text blocks move:{{{
+" Credits: https://twitter.com/MasteringVim/status/811868588785143808?s=03
+vnoremap <c-j> :m '>+1<CR>gv=gv
+vnoremap <c-k> :m '<-2<CR>gv=gv
 "}}}
 
 " mm -> MM"{{{
