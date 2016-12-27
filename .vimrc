@@ -21,6 +21,7 @@ set ignorecase
 set nocindent
 "set verbose=9
 
+so ~/.vim/vimrc_files/plugins.vim
 so ~/.vim/vimrc_files/colors.vim
 so ~/.vim/vimrc_files/addons.vim
 so ~/.vim/vimrc_files/display.vim
