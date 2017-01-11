@@ -1,4 +1,12 @@
 
+" Search mappings:
+" """"""""""""""""
+
+" // In visual mode to search selected text:
+vnoremap // y/<C-R>"<CR>
+" http://vim.wikia.com/wiki/Search_for_visually_selected_text
+
+
 "Miscellaneous mappings:
 """"""""""""""""""""""""
 
