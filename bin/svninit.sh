@@ -30,7 +30,7 @@ git svn init --prefix=origin/ "${rootUrl}" -s
 echo "";
 
 echo "Fetching..."
-git svn fetch
+git svn fetch --log-window-size 100000
 echo "";
 
 echo "Rebasing..."
