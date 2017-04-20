@@ -76,7 +76,8 @@ noremap ñy :w!<space>~/.vim/clipboard.txt<enter>
 noremap ñp :r<space>~/.vim/clipboard.txt<enter>
 
 " ññ Cursor row+column switch.
-nmap ññ :silent set<space>cursorline!<space>cursorcolumn!<enter>
+" ...also refresh Syntax hilighting
+nmap ññ :silent syntax sync fromstart<enter>:silent set<space>cursorline!<space>cursorcolumn!<enter>
 
 " ñs Always show status bar.
 nmap ñs :silent set<space>laststatus=2<enter>
