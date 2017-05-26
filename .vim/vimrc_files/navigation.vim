@@ -75,9 +75,9 @@ noremap ñy :w!<space>~/.vim/clipboard.txt<enter>
 " ñp "Cross-session" paste.
 noremap ñp :r<space>~/.vim/clipboard.txt<enter>
 
-" ññ Cursor row+column switch.
+" ññ Cursor row+column+numbering switch.
 " ...also refresh Syntax hilighting
-nmap ññ :silent syntax sync fromstart<enter>:silent set<space>cursorline!<space>cursorcolumn!<enter>
+nmap ññ :silent syntax sync fromstart<enter>:silent set<space>cursorline!<space>cursorcolumn!<space>number!<enter>
 
 " ñs Always show status bar.
 nmap ñs :silent set<space>laststatus=2<enter>
