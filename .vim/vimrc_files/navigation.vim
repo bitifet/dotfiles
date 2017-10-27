@@ -86,13 +86,14 @@ nmap ñs :silent set<space>laststatus=2<enter>
 nmap ñS :silent set<space>laststatus=1<enter>
 
 
-" ==========
-" Ñ-commands
-" ==========
-" Ñ: Window management.
+" ==============
+" <tab>-commands
+" ==============
+" <tab>: Window management.
 
 " --------------------------------
 " tmux-pane-like window shortcuts:
+"  (Use double tab inside tmux)
 " --------------------------------
 
 " ------------------------
@@ -103,38 +104,38 @@ nmap ñS :silent set<space>laststatus=1<enter>
 " "Goto File" (gf): Ñgf / ÑgF
 " ------------------------
 set splitbelow
-nmap Ñ- <c-w><c-s>
-nmap Ñ_ :new<enter>
-nmap Ñ__ Ñ_ñJ
-nmap Ñgf :new<space><cfile><CR>
+nmap <tab>- <c-w><c-s>
+nmap <tab>_ :new<enter>
+nmap <tab>__ <tab>_ñJ
+nmap <tab>gf :new<space><cfile><CR>
 set splitright
-nmap Ñ\| <c-w><c-v>
-nmap Ñ! :vnew<enter>
-nmap Ñ!! Ñ!ñJ
-nmap ÑgF :vnew<space><cfile><CR>
+nmap <tab>\| <c-w><c-v>
+nmap <tab>! :vnew<enter>
+nmap <tab>!! <tab>!ñJ
+nmap <tab>gF :vnew<space><cfile><CR>
 
 " Close (current / all other) windows:
-nmap Ñx <c-w>c
-nmap ÑX <c-w>o
+nmap <tab>x <c-w>c
+nmap <tab>X <c-w>o
 
 " Window navigation (hjkl)
-nmap Ñh <c-w>h
-nmap Ñj <c-w>j
-nmap Ñk <c-w>k
-nmap Ñl <c-w>l
+nmap <tab>h <c-w>h
+nmap <tab>j <c-w>j
+nmap <tab>k <c-w>k
+nmap <tab>l <c-w>l
 
 " Window resizing (hjkl)
-nmap ÑH :vertical<space>resize<space>-1<enter>
-nmap ÑJ :resize<space>+1<enter>
-nmap ÑK :resize<space>-1<enter>
-nmap ÑL :vertical<space>resize<space>+1<enter>
+nmap <tab>H :vertical<space>resize<space>-1<enter>
+nmap <tab>J :resize<space>+1<enter>
+nmap <tab>K :resize<space>-1<enter>
+nmap <tab>L :vertical<space>resize<space>+1<enter>
 " HINT: Tmux config to make resizing repeatable:
 " -----------------------------------------------
 " # Resize:
 " # (Repeatable) Resize with Meta-hjkl:
-" bind -r M-h send-keys ÑH
-" bind -r M-j send-keys ÑJ
-" bind -r M-k send-keys ÑK
-" bind -r M-l send-keys ÑL
+" bind -r M-h send-keys <tab>H
+" bind -r M-j send-keys <tab>J
+" bind -r M-k send-keys <tab>K
+" bind -r M-l send-keys <tab>L
 " -----------------------------------------------
 
