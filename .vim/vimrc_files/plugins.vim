@@ -18,12 +18,11 @@
 call plug#begin()
 
 
-" Markdown / https://github.com/SidOfc/mkdx
-Plug 'SidOfc/mkdx'
-
 " Markdown TOC generator:
 " https://github.com/mzlogin/vim-markdown-toc
 Plug 'mzlogin/vim-markdown-toc'
 
+" Markdown / https://github.com/SidOfc/mkdx
+Plug 'SidOfc/mkdx'
 
 call plug#end()
