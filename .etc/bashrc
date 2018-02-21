@@ -6,4 +6,8 @@ alias less="less -R"
 # lsd -ls downloads:
 alias lsd="ls -lht ~/Baixades/ | head"
 
+# Own bin dir:
 export PATH="${PATH}:~/bin"
+
+# Keep prompt short:
+export PROMPT_DIRTRIM=2
