@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+files=$(fzf -e -m | perl -pe 's/(.*)/"$1"/')
+echo "";
+
+
+if [[ -z "${files}" ]]; then
+    exit 1;
+fi;
+
+echo "$@" $files | bash;
+

@@ -3,8 +3,11 @@ set -o vi
 
 alias less="less -R"
 
-# lsd -ls downloads:
+# lsd - ls downloads:
 alias lsd="ls -lht ~/Baixades/ | head"
+
+# pickd - Pick last downloaded file to current directory:
+alias pickd='mv -i ~/Baixades/"$(ls -t1 ~/Baixades | head -n 1)" ./'
 
 # Own bin dir:
 export PATH="${PATH}:~/bin"
