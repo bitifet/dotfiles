@@ -1,12 +1,42 @@
 #!/usr/bin/env bash
 
-files=$(fzf -e -m | perl -pe 's/(.*)/"$1"/')
+# Check if (optional) path is provided:
+if [ -d "${1}" ]; then
+    path="${1}"; shift;
+    pushd "${path}" >/dev/null;
+fi;
+
+
+# Run 'fzf' and capture its result:
+files=$(fzf --preview="cat {}" -e -m | perl -pe 's/(.*)/"$1"/')
 echo "";
 
 
+# Let's abort by pressing Ctrl+C:
 if [[ -z "${files}" ]]; then
     exit 1;
 fi;
 
-echo "$@" $files | bash;
 
+# Execute command if provided:
+if [ -n "${1}" ]; then
+    # Execute preserving file quotes:
+    # INFO: This can cause "stdin not connected to terminal"-like warnings.
+    echo "$@" $files | bash;
+else
+    # Interactively ask for command:
+    read -p "Command (leave empty only list files):" cmd;
+    if [ -n "${cmd}" ]; then
+        echo $cmd $files | bash;
+    else
+        # Failback to simply show selected files.
+        echo $files;
+    fi;
+fi;
+stty sane; # Fix eventuals tty mess.
+
+
+# Return to original path (if specific path is provided):
+if [ -n "${path}" ]; then
+    popd >/dev/null;
+fi;
