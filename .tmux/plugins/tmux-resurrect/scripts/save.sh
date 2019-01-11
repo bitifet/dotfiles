@@ -48,6 +48,8 @@ pane_format() {
 	format+="#{pane_current_command}"
 	format+="${delimiter}"
 	format+="#{pane_pid}"
+	format+="${delimiter}"
+	format+="#{history_size}"
 	echo "$format"
 }
 
@@ -108,17 +110,75 @@ pane_full_command() {
 	$strategy_file "$pane_pid"
 }
 
+number_nonempty_lines_on_screen() {
+	local pane_id="$1"
+	tmux capture-pane -pJ -t "$pane_id" |
+		sed '/^$/d' |
+		wc -l |
+		sed 's/ //g'
+}
+
+# tests if there was any command output in the current pane
+pane_has_any_content() {
+	local pane_id="$1"
+	local history_size="$(tmux display -p -t "$pane_id" -F "#{history_size}")"
+	local cursor_y="$(tmux display -p -t "$pane_id" -F "#{cursor_y}")"
+	# doing "cheap" tests first
+	[ "$history_size" -gt 0 ] || # history has any content?
+		[ "$cursor_y" -gt 0 ] || # cursor not in first line?
+		[ "$(number_nonempty_lines_on_screen "$pane_id")" -gt 1 ]
+}
+
+capture_pane_contents() {
+	local pane_id="$1"
+	local start_line="-$2"
+	local pane_contents_area="$3"
+	if pane_has_any_content "$pane_id"; then
+		if [ "$pane_contents_area" = "visible" ]; then
+			start_line="0"
+		fi
+		# the printf hack below removes *trailing* empty lines
+		printf '%s\n' "$(tmux capture-pane -epJ -S "$start_line" -t "$pane_id")" > "$(pane_contents_file "save" "$pane_id")"
+	fi
+}
+
 save_shell_history() {
+	if [ "$pane_command" = "bash" ]; then
+		local history_w='history -w'
+		local history_r='history -r'
+		local accept_line='C-m'
+		local end_of_line='C-e'
+		local backward_kill_line='C-u'
+	elif [ "$pane_command" = "zsh" ]; then
+		# fc -W does not work with -L
+		# fc -l format is different from what's written by fc -W
+		# fc -R either reads the format produced by fc -W or considers
+		# the entire line to be a command. That's why we need -n.
+		# fc -l only list the last 16 items by default, I think 64 is more reasonable.
+		local history_w='fc -lLn -64 >'
+		local history_r='fc -R'
+
+		local zsh_bindkey="$(zsh -i -c bindkey)"
+		local accept_line="$(expr "$(echo "$zsh_bindkey" | grep -m1 '\saccept-line$')" : '^"\(.*\)".*')"
+		local end_of_line="$(expr "$(echo "$zsh_bindkey" | grep -m1 '\send-of-line$')" : '^"\(.*\)".*')"
+		local backward_kill_line="$(expr "$(echo "$zsh_bindkey" | grep -m1 '\sbackward-kill-line$')" : '^"\(.*\)".*')"
+	else
+		return
+	fi
+
 	local pane_id="$1"
 	local pane_command="$2"
 	local full_command="$3"
-	if [ "$pane_command" = "bash" ] && [ "$full_command" = ":" ]; then
+	if [ "$full_command" = ":" ]; then
 		# leading space prevents the command from being saved to history
 		# (assuming default HISTCONTROL settings)
-		local write_command=" history -w '$(resurrect_history_file "$pane_id")'"
+		local write_command=" $history_w '$(resurrect_history_file "$pane_id" "$pane_command")'"
+		local read_command=" $history_r '$(resurrect_history_file "$pane_id" "$pane_command")'"
 		# C-e C-u is a Bash shortcut sequence to clear whole line. It is necessary to
 		# delete any pending input so it does not interfere with our history command.
-		tmux send-keys -t "$pane_id" C-e C-u "$write_command" C-m
+		tmux send-keys -t "$pane_id" "$end_of_line" "$backward_kill_line" "$write_command" "$accept_line"
+		# Immediately restore after saving
+		tmux send-keys -t "$pane_id" "$end_of_line" "$backward_kill_line" "$read_command" "$accept_line"
 	fi
 }
 
@@ -167,7 +227,7 @@ fetch_and_dump_grouped_sessions(){
 dump_panes() {
 	local full_command
 	dump_panes_raw |
-		while IFS=$d read line_type session_name window_number window_name window_active window_flags pane_index dir pane_active pane_command pane_pid; do
+		while IFS=$d read line_type session_name window_number window_name window_active window_flags pane_index dir pane_active pane_command pane_pid history_size; do
 			# not saving panes from grouped sessions
 			if is_session_grouped "$session_name"; then
 				continue
@@ -190,6 +250,8 @@ dump_windows() {
 				toggle_window_zoom "${session_name}:${window_index}"
 				# get correct window layout
 				window_layout="$(tmux display-message -p -t "${session_name}:${window_index}" -F "#{window_layout}")"
+				# sleep required otherwise vim does not redraw correctly, issue #112
+				sleep 0.1 || sleep 1 # portability hack
 				# maximize window again
 				toggle_window_zoom "${session_name}:${window_index}"
 			fi
@@ -201,24 +263,52 @@ dump_state() {
 	tmux display-message -p "$(state_format)"
 }
 
-dump_bash_history() {
+dump_pane_contents() {
+	local pane_contents_area="$(get_tmux_option "$pane_contents_area_option" "$default_pane_contents_area")"
+	dump_panes_raw |
+		while IFS=$d read line_type session_name window_number window_name window_active window_flags pane_index dir pane_active pane_command pane_pid history_size; do
+			capture_pane_contents "${session_name}:${window_number}.${pane_index}" "$history_size" "$pane_contents_area"
+		done
+}
+
+dump_shell_history() {
 	dump_panes |
 		while IFS=$d read line_type session_name window_number window_name window_active window_flags pane_index dir pane_active pane_command full_command; do
 			save_shell_history "$session_name:$window_number.$pane_index" "$pane_command" "$full_command"
 		done
 }
 
+remove_old_backups() {
+	# remove resurrect files older than 30 days, but keep at least 5 copies of backup.
+	local -a files
+	files=($(ls -t $(resurrect_dir)/${RESURRECT_FILE_PREFIX}_*.${RESURRECT_FILE_EXTENSION} | tail -n +6))
+	[[ ${#files[@]} -eq 0 ]] ||
+		find "${files[@]}" -type f -mtime +30 | xargs rm
+}
+
 save_all() {
 	local resurrect_file_path="$(resurrect_file_path)"
+	local last_resurrect_file="$(last_resurrect_file)"
 	mkdir -p "$(resurrect_dir)"
 	fetch_and_dump_grouped_sessions > "$resurrect_file_path"
 	dump_panes   >> "$resurrect_file_path"
 	dump_windows >> "$resurrect_file_path"
 	dump_state   >> "$resurrect_file_path"
-	ln -fs "$(basename "$resurrect_file_path")" "$(last_resurrect_file)"
-	if save_bash_history_option_on; then
-		dump_bash_history
+	if files_differ "$resurrect_file_path" "$last_resurrect_file"; then
+		ln -fs "$(basename "$resurrect_file_path")" "$last_resurrect_file"
+	else
+		rm "$resurrect_file_path"
 	fi
+	if capture_pane_contents_option_on; then
+		mkdir -p "$(pane_contents_dir "save")"
+		dump_pane_contents
+		pane_contents_create_archive
+		rm "$(pane_contents_dir "save")"/*
+	fi
+	if save_shell_history_option_on; then
+		dump_shell_history
+	fi
+	remove_old_backups
 }
 
 show_output() {

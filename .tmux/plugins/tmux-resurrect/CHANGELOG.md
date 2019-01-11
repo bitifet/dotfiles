@@ -1,6 +1,27 @@
 # Changelog
 
 ### master
+- save and restore tmux pane contents (@laomaiweng)
+- update tmux-test to solve issue with recursing git submodules in that project
+- set options quietly in `resurrect.tmux` script
+- improve pane contents restoration: `cat <file>` is no longer shown in pane
+  content history
+- refactoring: drop dependency on `paste` command
+- bugfix for pane contents restoration
+- expand tilde char `~` if used with `@resurrect-dir`
+- do not save empty trailing lines when pane content is saved
+- do not save pane contents if pane is empty (only for 'save pane contents'
+  feature)
+- "save pane contents" feature saves files to a separate directory
+- archive and compress pane contents file
+- make archive & compress pane contents process more portable
+- `mutt` added to the list of automatically restored programs
+- added guide for migrating from tmuxinator
+- fixed a bug for restoring commands on tmux 2.5 (and probably tmux 2.4)
+- do not create another resurrect file if there are no changes (credit @vburdo)
+- allow using '$HOSTNAME' in @resurrect-dir
+- add zsh history saving and restoring
+- delete resurrect files older than 30 days, but keep at least 5 files
 
 ### v2.4.0, 2015-02-23
 - add "tmux-test"
