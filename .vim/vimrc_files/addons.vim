@@ -2,9 +2,12 @@
 " Addons
 " ######
 
+" Vimux:
+" ======
+:let VimuxUseNearest = 0
+
 " Vim outliner:
 " =============
-set nocompatible
 filetype plugin indent on
 
 " Surronud:

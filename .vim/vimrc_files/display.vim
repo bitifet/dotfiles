@@ -7,18 +7,8 @@ set rulerformat=%55(%F\ \ \ \ %=%c,%l/%L\ \ \ \ %P%) "Ruler with current file pa
 set showbreak=\|
 
 
-"Indentation: {{{
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-set autoindent
-set listchars=tab:\|-
-set list
 
-set expandtab
-au BufEnter * set expandtab
-au BufEnter *.otl set noexpandtab
-"}}}
+
 
 
 " [F9]: Redraw!"{{{

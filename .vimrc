@@ -6,8 +6,6 @@
 " Source: https://github.com/bitifet/homedir/blob/master/.vimrc
 " Credits:
 "    * "Vim recipes" (Bram Moolenar)
-"      http://breu.bulma.net/?l16943
-"      (Googled. Original runpaint.com link is broken :-/)
 "    * Other contributions credits in its own script heading.
 " Other credits:
 "    (Syntax files & plugins included in my personal git home repo)
@@ -17,9 +15,10 @@
 "mapclear
 autocmd!
 
-set ignorecase
-set nocindent
+set nocompatible
 "set verbose=9
+
+so ~/.vim/vimrc_files/editor.vim
 
 so ~/.vim/vimrc_files/plugins.vim
 so ~/.vim/vimrc_files/colors.vim
