@@ -1,0 +1,8 @@
+#!/bin/bash
+
+grep -REc "$1" * \
+    | grep -v ':0$' \
+    | perl -pe 's/:.*//' \
+    | grep -v '.svn' \
+    | grep -v '.swp' \
+    | grep -Ev '(^|/)node_modules/'
