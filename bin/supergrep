@@ -3,6 +3,7 @@
 grep -REc "$1" * \
     | grep -v ':0$' \
     | perl -pe 's/:.*//' \
-    | grep -v '.svn' \
-    | grep -v '.swp' \
+    | grep -Ev '(^|/)\.svn($|/)' \
+    | grep -Ev '(^|/)\.sass-cache($|/)' \
+    | grep -Ev '.sw[pon]$' \
     | grep -Ev '(^|/)node_modules/'
