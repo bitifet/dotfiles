@@ -16,6 +16,7 @@ read git_email
 git config --global user.name "${git_user}"
 git config --global user.email "${git_email}"
 git config --global push.default simple
+git config --global diff.noprefix true
 echo "Setting aliases..."
 echo "'git l' for 'git log --graph --all --decorate'"
 git config --global alias.l 'log --graph --all --decorate'

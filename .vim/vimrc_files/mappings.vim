@@ -26,6 +26,12 @@ imap (()) (<enter><enter><esc>kV:!date<space>+\%a\%G\%m\%d-\%H\%M<enter>kJJi)<es
 imap (())<BS> (<enter><enter><esc>kV:!date<space>+\%a\%G\%m\%d<enter>kJJi)<esc>F(lxf)lxa
 
 
+" Normal mode mappings:
+" """""""""""""""""""""
+
+" ñ<space> (Repeatable) move one character right multiline.
+nmap ñ<space> /.<enter><esc><esc>
+
 
 " Old stuff:"{{{
 " """"""""""
