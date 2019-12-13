@@ -10,10 +10,10 @@ alias lsd="ls -lht ~/Baixades/ | head"
 alias pickd='mv -i ~/Baixades/"$(ls -t1 ~/Baixades | head -n 1)" ./'
 
 # some more ls aliases
-alias ll='ls -1F'
-alias lll='ls -lF'
-alias la='ls -A'
-alias l='ls -CF'
+alias ll='LC_ALL=C ls -1F'
+alias lll='LC_ALL=C ls -lF'
+alias la='LC_ALL=C ls -A'
+alias l='LC_ALL=C ls -CF'
 
 # Own bin dir:
 export PATH="${PATH}:~/bin"
