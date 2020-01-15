@@ -41,6 +41,7 @@ so ~/.vim/vimrc_files/misc.vim
 so ~/.vim/vimrc_files/112.vim
 so ~/.vim/vimrc_files/python.vim
 so ~/.vim/vimrc_files/oldStuff.vim
+so ~/.vim/vimrc_files/emoji.vim
 
 so ~/.vim/vimrc_files/syntax.vim
 
