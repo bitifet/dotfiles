@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+cmd=$(which ${1});
+
+if [ -n "${cmd}" ]; then
+    shift;
+    sudo ${cmd} $@;
+else
+    ${@}; # Let's command not found error happen...
+fi;
+
+# vim: :setf sh
