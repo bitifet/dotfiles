@@ -12,4 +12,7 @@ ab :point_right: 👉
 ab :book: 📖 
 ab :link: 🔗 
 ab :wrench: 🔧 
-
+ab :info: 🛈
+ab :telephone: 📞
+ab :email: 📧
+ab :computer: 💻
