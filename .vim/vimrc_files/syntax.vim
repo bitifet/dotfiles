@@ -13,6 +13,7 @@ autocmd Syntax * call SyntaxRange#Include('@@sql@@', '@@/sql@@', 'sql', 'NonText
 autocmd Syntax * call SyntaxRange#Include('@@php@@', '@@/php@@', 'php', 'NonText')
 autocmd Syntax * call SyntaxRange#Include('@@sh@@', '@@/sh@@', 'sh', 'NonText')
 autocmd Syntax * call SyntaxRange#Include('@@html@@', '@@/html@@', 'html', 'NonText')
+autocmd Syntax * call SyntaxRange#Include('@@python@@', '@@/python@@', 'python', 'NonText')
 "autocmd Syntax * call SyntaxRange#Include('@@csv@@', '@@/csv@@', 'csv', 'NonText')
 
 " Markdown:
