@@ -18,6 +18,9 @@
 "    $ sudo npm install -g underscore-cli
 "
 
+" Run command line under the cursor in background:
+nmap <f2> V:!bash<space>&<enter>u
+
 "  Normal mode (whole -saved- file):
 nmap <f5> :!%:p\|less -r<enter>
 nmap <a-f5> :silent<space>!tmux<space>split-window<space>-h<space>"%:p\|less<space>-r"<enter>

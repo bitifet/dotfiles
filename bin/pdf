@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+
+FILE="${1}";
+PAGE="${2}";
+
+if [ -n "${PAGE}" ]; then
+    evince -p "${PAGE}" "${FILE}";
+else
+    evince "${FILE}";
+fi;
