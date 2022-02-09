@@ -1,7 +1,7 @@
 
 " Emoji shortcuts
 ab :white_check_mark: ✅ 
-ab :warning: ⚠ 
+ab :warning: ⚠️
 ab :bulb: 💡
 ab :pushpin: 📌
 ab :bomb: 💣
@@ -9,6 +9,7 @@ ab :pill: 💊
 ab :construction: 🚧
 ab :pencil: 📝
 ab :point_right: 👉 
+ab :thumb: 👍 
 ab :book: 📖 
 ab :link: 🔗 
 ab :wrench: 🔧 
@@ -16,3 +17,19 @@ ab :info: 🛈
 ab :telephone: 📞
 ab :email: 📧
 ab :computer: 💻
+ab :sandclock: ⏳ 
+ab :stopwatch: ⏱ 
+ab :arrow_right: ➡️
+ab :arrow_left: ⬅️
+ab :arrow_up: ⬆️
+ab :arrow_down: ⬇️
+ab :arrow_sides: ↔️
+ab :arrow_updown: ↕️
+ab :arrow_upleft: ↖️
+ab :arrow_upright: ↗️
+ab :arrow_downleft: ↘️
+ab :arrow_downright: ↙️
+ab :arrow_returnup: ⤴️
+ab :arrow_returndown: ⤵️
+ab :arrow_returnright: ↪️
+ab :arrow_returnleft: ↩️
