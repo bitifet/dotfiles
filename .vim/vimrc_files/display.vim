@@ -8,7 +8,8 @@ set showbreak=\|
 
 
 
-
+:set colorcolumn=80
+:hi ColorColumn ctermbg=darkgrey guibg=darkgrey ctermfg=white guifg=white
 
 
 " [F9]: Redraw!"{{{
