@@ -3,7 +3,7 @@
 echo "================================================================"
 echo "                      - Software Setup -"
 echo "================================================================"
-sudo apt-get install vim dialog screen tmux git subversion git-svn ssh curl g++ python make
+sudo apt-get install vim dialog screen tmux git subversion git-svn ssh curl g++ make
 
 
 echo "================================================================"
@@ -28,7 +28,7 @@ echo "                        - NodeJS Setup -"
 echo "================================================================"
 echo "Installing Node Version Manager (nvm):"
 if [ \! -e ~/.nvm ]; then
-    curl https://raw.githubusercontent.com/creationix/nvm/v0.11.1/install.sh | bash
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.39.3/install.sh | bash
     export NVM_DIR="/home/joanmi/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
     latestNode=$(nvm ls-remote | tail -n 1 | perl -pe 's/^\D*//');
