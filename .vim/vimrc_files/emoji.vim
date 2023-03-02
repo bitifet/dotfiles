@@ -1,6 +1,10 @@
 
 " Emoji shortcuts
-ab :white_check_mark: ✅ 
+ab :check: ✔️
+ab :check_green: ✅
+ab :check_blue: ☑️
+ab :cancel: ✖️
+ab :cancel_red: ❌
 ab :warning: ⚠️
 ab :bulb: 💡
 ab :pushpin: 📌
@@ -33,3 +37,5 @@ ab :arrow_returnup: ⤴️
 ab :arrow_returndown: ⤵️
 ab :arrow_returnright: ↪️
 ab :arrow_returnleft: ↩️
+ab :magnif: 🔍
+ab :rmagnif: 🔎
