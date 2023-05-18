@@ -48,8 +48,8 @@ ab :rmagnif: 🔎
 ab :exclam: ❗
 ab :exclam_white: ❕
 ab :2exclam: ‼️
-ab :question:❓ 
-ab :question_white:❔ 
+ab :question: ❓ 
+ab :question_white: ❔ 
 ab :!question: ⁉️
 ab :party: 🥳
 ab :broom: 🧹
