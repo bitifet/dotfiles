@@ -24,6 +24,7 @@ autocmd Syntax markdown call SyntaxRange#Include('^\s*```sql\s*$', '^\s*```\s*$'
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```php\s*$', '^\s*```\s*$', 'php', 'NonText')
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```sh\s*$', '^\s*```\s*$', 'sh', 'NonText')
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```html\s*$', '^\s*```\s*$', 'html', 'NonText')
+autocmd Syntax markdown call SyntaxRange#Include('^\s*```css\s*$', '^\s*```\s*$', 'css', 'NonText')
 "autocmd Syntax markdown call SyntaxRange#Include('^\s*```csv\s*$', '^\s*```\s*$', 'csv', 'NonText')
 
 " Fix Wrong behaviour with backticks without language specification:
