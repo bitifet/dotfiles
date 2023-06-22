@@ -24,4 +24,6 @@ export PROMPT_DIRTRIM=2
 # "open" command:
 alias open='xdg-open'
 
+# OpenAI:
 export CHAT_GPT_KEY=$(cat ~/.config/openai.token)
+

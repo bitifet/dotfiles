@@ -19,10 +19,12 @@ autocmd Syntax * call SyntaxRange#Include('@@python@@', '@@/python@@', 'python',
 " Markdown:
 " ---------
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```javascript\s*$', '^\s*```\s*$', 'javascript', 'NonText')
+autocmd Syntax markdown call SyntaxRange#Include('^\s*```json\s*$', '^\s*```\s*$', 'json', 'NonText')
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```sql\s*$', '^\s*```\s*$', 'sql', 'NonText')
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```php\s*$', '^\s*```\s*$', 'php', 'NonText')
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```sh\s*$', '^\s*```\s*$', 'sh', 'NonText')
 autocmd Syntax markdown call SyntaxRange#Include('^\s*```html\s*$', '^\s*```\s*$', 'html', 'NonText')
+autocmd Syntax markdown call SyntaxRange#Include('^\s*```css\s*$', '^\s*```\s*$', 'css', 'NonText')
 "autocmd Syntax markdown call SyntaxRange#Include('^\s*```csv\s*$', '^\s*```\s*$', 'csv', 'NonText')
 
 " Fix Wrong behaviour with backticks without language specification:

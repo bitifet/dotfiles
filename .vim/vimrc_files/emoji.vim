@@ -1,5 +1,11 @@
 
 " Emoji shortcuts
+ab :smiley: 😉
+ab :sad: ☹️
+ab :angry: 😡
+ab :happy: 😃
+ab :love: 😍
+ab :perfect: 👌
 ab :check: ✔️
 ab :check_green: ✅
 ab :check_blue: ☑️
@@ -42,3 +48,17 @@ ab :question: ❓
 ab :magnif: 🔍
 ab :rmagnif: 🔎
 ab :floppy: 💾
+ab :exclam: ❗
+ab :exclam_white: ❕
+ab :2exclam: ‼️
+ab :question: ❓ 
+ab :question_white: ❔ 
+ab :!question: ⁉️
+ab :party: 🥳
+ab :broom: 🧹
+ab :brush: 🖌️
+ab :hammer: 🔨
+ab :plaster: 🩹
+
+:command Smile !less<space>~/.vim/vimrc_files/emoji.vim
+
