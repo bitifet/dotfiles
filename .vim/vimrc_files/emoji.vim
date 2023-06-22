@@ -41,3 +41,4 @@ ab :lock: 🔒
 ab :question: ❓
 ab :magnif: 🔍
 ab :rmagnif: 🔎
+ab :floppy: 💾

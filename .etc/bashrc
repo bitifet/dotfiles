@@ -16,10 +16,12 @@ alias la='LC_ALL=C ls -A'
 alias l='LC_ALL=C ls -CF'
 
 # Own bin dir:
-export PATH="${PATH}:~/bin"
+export PATH="${PATH}:~/bin:~/.local/bin"
 
 # Keep prompt short:
 export PROMPT_DIRTRIM=2
 
 # "open" command:
 alias open='xdg-open'
+
+export CHAT_GPT_KEY=$(cat ~/.config/openai.token)
