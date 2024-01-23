@@ -25,4 +25,7 @@ Plug 'mzlogin/vim-markdown-toc'
 " Markdown / https://github.com/SidOfc/mkdx
 Plug 'SidOfc/mkdx'
 
+" Matchit (%)
+Plug 'https://github.com/adelarsq/vim-matchit'
+
 call plug#end()
