@@ -85,6 +85,10 @@ ab :build: 🏗️
 ab :floppy: 💾
 ab :makeup: 💄
 ab :clock: 🕒
+ab :recycle: ♻️
+ab :cyclone: 🌀
+ab :bell: 🔔
+ab :megaphone: 📢
 
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
