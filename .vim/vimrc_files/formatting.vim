@@ -1,6 +1,6 @@
 
 " Json:
-:command! -range Json <line1>,<line2>:!python<space>-m<space>json.tool
+:command! -range Json <line1>,<line2>:!python3<space>-m<space>json.tool
 
 " Csv: (Convert selection to from SQL output to CSV)
 :command! -range Csv <line1>,<line2>:s/^\s*/"/|<line1>,<line2>:s/\s*|\s*/";"/g|<line1>,<line2>:s/\s*$/"/|<line1>,<line2>:g/^"[-+]*"$/d
