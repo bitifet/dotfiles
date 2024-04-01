@@ -19,6 +19,10 @@ let php_htmlInStrings=1
 " ==============
 "  ( http://www.vim.org/scripts/script.php?script_id=4168 )
 
+" Workarounds:
+" ------------
+let main_syntax = "" " Prevent var not defined error while including some syntax files
+
 " Global:
 " -------
 autocmd Syntax * call SyntaxRange#Include('@@js@@', '@@/js@@', 'javascript', 'NonText')
