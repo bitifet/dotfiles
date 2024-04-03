@@ -23,6 +23,11 @@ vnoremap <c-k> :m '<-2<CR>gv=gv
 nmap MM 'm
 "}}}
 
+" Scroll:{{{
+nmap <c-n> <c-e>
+nmap <c-m> <c-y>
+"}}}
+
 
 " ===========
 " ñ-commands:

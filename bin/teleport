@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+# :vim setf bash
+
+# Constants:
+tunPort=9876;
+screenSessId="teleport_$$"
+
+# Define handy default values:
+allHostNames=$(hostname -A);
+srcFQDN=${allHostNames%% *}
+srcUser=$(whoami)
+srcPath=$(pwd); # Current path by default.
+destination="${1}"; # Accept remote url (even user@host...)
+pivotUser="${2}"; # Accept pivot-user to sudo.
+forwardings="-L 2000:localhost:2000";
+
+# Check required local tools availability:{{{
+if [ -z "$(which ssh)" ]; then
+    >&2 echo "ERROR: ssh not installed";
+    exit 1;
+fi
+if [ -z "$(which expect)" ]; then
+    >&2 echo "ERROR: expect not installed";
+    exit 1;
+fi
+if [ -z "$(which screen)" ]; then
+    >&2 echo "ERROR: screen not installed";
+    exit 1;
+fi
+# }}}
+
+
+# Banner
+# ======
+echo '                   .';
+echo '                  .:.';
+echo '                 .:::.';
+echo '                .:::::.';
+echo '            ***.:::::::.***';
+echo '       *******.:::::::::.*******       Ｔｅｌｅｐｏｒｔ';
+echo '     ********.:::::::::::.********     －－－－－－－－';
+echo '    ********.:::::::::::::.********    ';
+echo '    *******.::::::`***`::::.*******    GNU';
+echo '    ******.::::`*********`::.******    Directory';
+echo '     ****.:::`*************`:.****     Teleportation';
+echo '       *.::`*****************`.*       System';
+echo '       .:`  ***************    .       ';
+echo '      .'
+# '
+echo '－－－－－－－－－－－－－－－－－－－－－－－－－－－－－'
+echo
+
+
+# Confirm origin:
+# ===============
+origin="${srcUser}@${srcFQDN}:${srcPath}";
+read -r -p "  👉 Origin: " -ei "${origin}" origin
+echo "";
+srcUser=${origin%%@*}
+rest=${origin#*@}
+srcFQDN=${rest%%:*}
+srcPath=${rest#*:}
+tunOrigin="${srcUser}@localhost:${srcPath}";
+
+# echo $srcUser;
+# echo $srcFQDN;
+# echo $srcPath;
+# exit 0;
+
+# Ask for local passowrd:
+# =======================
+read -s -r -p "  👉 Please, provide your local password: " srcUserPw; echo "";
+echo "";
+
+
+# Confirm destination:
+# ====================
+dstUser=${destination%%@*}
+if [[ $destination != *@* ]]; then dstUser="${srcUser}"; fi
+rest=${destination#*@}
+dstFQDN=${rest%%:*}
+dstPath=${rest#*:}
+if [[ $rest != *:* ]]; then dstPath=$(basename "${srcPath}"); fi
+destination="${dstUser}@${dstFQDN}:${dstPath}";
+read -r -p "  👉 Destination: " -ei "${destination}" destination
+echo "";
+dstUser=${destination%%@*}
+rest=${destination#*@}
+dstFQDN=${rest%%:*}
+dstPath=${rest#*:}
+dstHost="${dstUser}@${dstFQDN}";
+
+if [[ ${dstPath} != /* ]]; then dstPath="~/${dstPath}"; fi;
+
+# echo $dstUser;
+# echo $dstFQDN;
+# echo $dstPath;
+# exit 0;
+
+
+# Ask for remote passowrd:
+# =======================
+read -s -r -p "  👉 Now provide your remote password: " remotePw; echo "";
+echo "";
+
+
+# Ask for pivot user:
+# ===================
+read -r -p "  👉 Pivot user (leave blank if no sudo required): " -ei "${pivotUser}" pivotUser
+echo "";
+
+
+# Ask for extra ssh forwardings:
+# ==============================
+read -r -p "  👉 Additional (ssh) port forwardings: " -ei "${forwardings}" forwardings
+echo "";
+
+
+
+if [ -n "${pivotUser}" ]; then
+sudoCmd=$(cat << EOF
+send "sudo su - ${pivotUser}\\r"
+expect "password"
+send "${remotePw}\\r"
+expect "$ "
+EOF
+);
+else
+    sudoCmd="";
+fi;
+
+
+
+
+# Create screen session:
+# ======================
+screen -dmS ${screenSessId}
+
+echo "------------------------------";
+echo "------------------------------";
+echo "";
+echo "";
+
+
+echo "Connecting to remote server..."
+expect << !EOF
+# @@sh@@
+
+## Capture screen session:
+spawn screen -r ${screenSessId}
+
+## Connect to remote server:{{{
+send " ssh -t -R ${tunPort}:localhost:22 ${forwardings} \"${dstHost}\" \"bash -s\"\r"
+expect "password:"
+send "${remotePw}\r"
+expect "$ "
+## }}}
+
+## Check required remote tools availability:{{{
+send " which sshfs || (echo -n mi;echo ssing)\r";
+expect {
+    "missing" {
+        puts "ERROR: sshfs not installed in remote host."
+        exit 1
+    }
+    "$ " {}
+}
+## }}}
+
+## Sudo to pivot-user (if provided):{{{
+${sudoCmd}
+## }}}
+
+## Create remote mount point:{{{
+send " mkdir -p ${dstPath}\r";
+expect "$ "
+## }}}
+
+## Mount local srcPath to remote:
+send " sshfs -o StrictHostKeyChecking=no -p ${tunPort} ${tunOrigin} ${dstPath}\r"
+
+expect "password:"
+
+send "${srcUserPw}\r"
+
+expect "$ "
+
+send " # ==========================\r"
+send " # Teleportation is ongoing!!\r"
+send " # ==========================\r"
+send "\r"
+send " # Close this terminal to return home...\r"
+send "\r"
+
+## Open bash session and umount on exit
+send "cd ${dstPath};bash;cd ..;fusermount3 -u ${dstPath} && rmdir ${dstPath} && exit\r"
+
+expect "$ "
+
+
+# @@/sh@@
+
+!EOF
+
+screen -r ${screenSessId}
+
+
