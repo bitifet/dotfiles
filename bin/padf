@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Original files:
+oddPages="${1}";
+revEvenPages="${2}";
+
+# Output file:
+combinedOutput="${3}";
+
+# Temporary files:
+evenPages=$(mktemp rev_reversed.XXXXXX.pdf)
+
+# Checkings:
+if [ -z "${combinedOutput}" ]; then
+    >&2 echo "SYNTAX: ${0} oddPages.pdf reversedEvenPages.pdf outputFile.pdf"
+    exit 1;
+fi;
+
+# Compilation process:
+pdftk "${revEvenPages}" cat end-1 output "${evenPages}" \
+    && pdftk "${oddPages}" "${evenPages}" shuffle output "${combinedOutput}" \
+;
+rm "${evenPages}";
+
+
+
