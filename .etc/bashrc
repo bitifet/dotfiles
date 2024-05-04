@@ -16,7 +16,7 @@ alias la='LC_ALL=C ls -A'
 alias l='LC_ALL=C ls -CF'
 
 # Own bin dir:
-export PATH="${PATH}:~/bin"
+export PATH="${PATH}:~/bin:~/.local/bin"
 
 # Keep prompt short:
 export PROMPT_DIRTRIM=2
@@ -25,7 +25,7 @@ export PROMPT_DIRTRIM=2
 alias open='xdg-open'
 
 # OpenAI:
-export CHAT_GPT_KEY=$(cat ~/.config/openai.token);
+export CHAT_GPT_KEY=$(cat ~/.config/openai.token)
 
 # Legacy SSH:
 alias lssh='/usr/bin/ssh -o KexAlgorithms=diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-dss'

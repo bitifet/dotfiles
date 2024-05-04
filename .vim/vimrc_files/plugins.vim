@@ -2,9 +2,9 @@
 " -------------
 " https://vi.stackexchange.com/questions/388/what-is-the-difference-between-the-vim-plugin-managers?answertab=active#tab-top
 " -------------
-" if empty(glob("~/.vim/autoload/plug.vim"))
-"     execute '!curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
-" endif
+if empty(glob("~/.vim/autoload/plug.vim"))
+    execute '!curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
+endif
 " ------------------------------------------------------------------
 
 " NOTE:

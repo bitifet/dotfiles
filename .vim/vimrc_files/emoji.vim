@@ -47,8 +47,11 @@ ab :arrow_returnup: ⤴️
 ab :arrow_returndown: ⤵️
 ab :arrow_returnright: ↪️
 ab :arrow_returnleft: ↩️
+ab :lock: 🔒
+ab :question: ❓
 ab :magnif: 🔍
 ab :rmagnif: 🔎
+ab :floppy: 💾
 ab :exclam: ❗
 ab :exclam_white: ❕
 ab :2exclam: ‼️
