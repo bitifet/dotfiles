@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# Installation:
+#     - Place this script in a directory in your path
+#     - chmod +x ...
+#
+# Usage:
+#     - cd $(drafts)
+# 
+# Alternative usage (if you prefer...):
+#     - pushd $(drafts)
+#     - ...
+#     - popd
+#
+# Utility:
+#     - Pretty obvious... 😉
+
+DRAFTS_BASE="${HOME}/Drafts"
+TODAY=$(date +%Y%m%d);
+DRAFTS_TODAY="${DRAFTS_BASE}/${TODAY}";
+mkdir -p ${DRAFTS_TODAY}
+echo $DRAFTS_TODAY;

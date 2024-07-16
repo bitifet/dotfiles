@@ -1,0 +1,13 @@
+#!/bin/bash
+
+timeout=${1:-1}
+
+while true; do
+    IFS= read -r -t "$timeout" line
+    if [[ -n "${line}" ]]; then
+        echo "${line}"
+    else
+        echo "😺"
+    fi
+done
+

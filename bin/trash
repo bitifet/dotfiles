@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# vim: filetype=bash
+
+TARGET="${1}";
+TRASH_DIR="${2:-trash}";
+
+if [[ ! -e "${TARGET}" ]]; then
+  >&2 echo "‼️  Target file not found: ${TARGET}";
+  exit 1;
+fi;
+
+if [[ ! -d "${TRASH_DIR}" ]]; then
+  >&2 echo "‼️  Trash directory does not exist: ${TRASH_DIR}";
+  exit 1;
+fi;
+
+TARGET_NAME=$(basename "${TARGET}");
+TARGET_PATH=$(dirname "${TARGET}");
+TRASH_PATH="${TRASH_DIR}/${TARGET_PATH}";
+EXPECTED_FILE="${TRASH_PATH}/${TARGET_NAME}";
+
+mkdir -p "${TRASH_PATH}";
+mv "${TARGET}" "${TRASH_PATH}";
+
+if [[ ! -e "${EXPECTED_FILE}" ]]; then
+  >&2 echo "❌ Failed!!!";
+  exit 1;
+fi;
+
+echo  "✅ ${TARGET} ➡️  ${EXPECTED_FILE} - ${EXPECTED_FILE}";
