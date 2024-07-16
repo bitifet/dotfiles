@@ -92,6 +92,8 @@ ab :recycle: ♻️
 ab :cyclone: 🌀
 ab :bell: 🔔
 ab :megaphone: 📢
+ab :fire: 🔥
+ab :firefighter: 🚒
 
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
