@@ -12,6 +12,65 @@ let php_sql_query=1
 let php_htmlInStrings=1
 
 
+" Manual hilighting:
+" ==================
+" Credits:
+"   Original idea: https://vimtricks.com/p/highlight-specific-lines/
+"   Toggle function: ChatGPT
+
+" Define line highlight color
+highlight LineHighlight ctermbg=darkgray guibg=darkgray
+
+" Function to toggle line highlight
+function! ToggleLineHighlight()
+    let lnum = line('.')
+    let matches = getmatches()
+    let highlighted = 0
+    for match in matches
+        if match.group == 'LineHighlight' && match.pattern == '\%'.lnum.'l'
+            " Remove the highlight
+            call matchdelete(match.id)
+            let highlighted = 1
+            break
+        endif
+    endfor
+    if !highlighted
+        " Add the highlight
+        call matchadd('LineHighlight', '\%'.lnum.'l')
+    endif
+endfunction
+
+" Function to toggle line highlight for a range of lines
+function! ToggleLineHighlightRange(start, end)
+    let highlighted = 0
+    let matches = getmatches()
+    for lnum in range(a:start, a:end)
+        for match in matches
+            if match.group == 'LineHighlight' && match.pattern == '\%'.lnum.'l'
+                " Remove the highlight
+                call matchdelete(match.id)
+                let highlighted = 1
+                break
+            endif
+        endfor
+    endfor
+    if !highlighted
+        for lnum in range(a:start, a:end)
+            " Add the highlight
+            call matchadd('LineHighlight', '\%'.lnum.'l')
+        endfor
+    endif
+endfunction
+
+
+" Toggle line highlight with çç
+nnoremap <silent> çç :call ToggleLineHighlight()<CR>
+
+" Toggle line highlight for visual selection
+xnoremap <silent> çç :<C-u>call ToggleLineHighlightRange(line("'<"), line("'>"))<CR>
+
+" Clear all the highlighted lines with çÇ
+nnoremap <silent> çÇ :call clearmatches()<CR>
 
 
 
