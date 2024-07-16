@@ -5,6 +5,17 @@
 tunPort=9876;
 screenSessId="teleport_$$"
 
+if [ "${1}" = "-h" ]; then
+    echo "U";
+    echo " 🚀 Ｔｅｌｅｐｏｒｔ";
+    echo "    －－－－－－－－";
+    echo "";
+    echo "    USAGE: ${0} [destination_host [pivot_user]]";
+    echo "";
+    echo "";
+    exit 0;
+fi;
+
 # Define handy default values:
 allHostNames=$(hostname -A);
 srcFQDN=${allHostNames%% *}
@@ -193,7 +204,7 @@ send " # Close this terminal to return home...\r"
 send "\r"
 
 ## Open bash session and umount on exit
-send "cd ${dstPath};bash;cd ..;fusermount3 -u ${dstPath} && rmdir ${dstPath} && exit\r"
+send "cd ${dstPath};bash;cd ..;fuser -k -TERM ${dstPath};sleep 1;fuser -k ${dstPath};fusermount3 -u ${dstPath} && rmdir ${dstPath} && exit\r"
 
 expect "$ "
 
@@ -204,4 +215,7 @@ expect "$ "
 
 screen -r ${screenSessId}
 
+echo " # ==================\r"
+echo " # Teleportation done\r"
+echo " # ==================\r"
 

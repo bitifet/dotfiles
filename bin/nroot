@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Función para comprobar si un directorio contiene un archivo 'package.json'
+contiene_package_json() {
+    [[ -e "$1/package.json" ]]
+}
+
+# Obtenemos el directorio actual
+directorio_actual=$(pwd)
+
+# Bucle while para navegar hacia arriba en el árbol de directorios
+while [[ "$directorio_actual" != "/" ]]; do
+    if contiene_package_json "$directorio_actual"; then
+        # Si encontramos el 'package.json', imprimimos la ruta relativa y salimos
+        echo "${directorio_actual#"$PWD"/}"
+        exit 0
+    fi
+    # Si no encontramos el archivo, subimos un nivel en el árbol de directorios
+    directorio_actual=$(dirname "$directorio_actual")
+done
+
+# Si llegamos a la raíz del sistema de archivos y no se encuentra 'package.json'
+echo "No se encontró ningún archivo 'package.json' en directorios superiores."
+exit 1
+
