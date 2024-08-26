@@ -1,0 +1,6 @@
+# lesskey file
+#F1 help ⬅️  Does not work, but upper "H" still work.
+h left-scroll
+l right-scroll
+^h no-scroll
+^l end-scroll
