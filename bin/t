@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+MONITOR_PREFIX="🖥️";
+
+spawn() {
+    local session_name="${MONITOR_PREFIX}  ${1}"
+    if ! tmux has-session -t "$session_name" 2>/dev/null; then
+        tmux new-session -d -s "$session_name"
+    fi
+}
+
+listMonitors() {
+    tmux list-sessions | grep "${MONITOR_PREFIX}"
+};
+
+getMonitorId() {
+    #listMonitors | perl -pe 's/:.*//' | grep -i "${1}" | head -n 1
+    local session_pattern="${1}"
+    tmux list-sessions \
+        -F '#{session_id}:#{session_name}' \
+        | grep -i ":${MONITOR_PREFIX}.*${session_pattern}" \
+        | perl -pe 's/:.*//'
+};
+
+listWindows() {
+    local session_name=${1}
+    if [[ -n "${session_name}" ]]; then
+        tmux list-windows -t "${session_name}"
+    fi;
+}
+
+selectWindow() {
+    local session_name=${1}
+    local window_name_or_number=${2}
+    tmux select-window -t "${session_name}:${window_name_or_number}"
+};
+
+
+spawnWindow() {
+    local session_id=${1}
+    local window_name=${2}
+    shift; shift;
+    local cmd=${@}
+    if tmux list-windows -t "${session_id}" -F '#{window_name}' | grep -x "${window_name}" >/dev/null; then
+        echo "Window name already exists: ${window_name}."
+    else
+        tmux new-window -t "${session_id}" -n "${window_name}" "${cmd}"
+    fi
+}
+
+
+# Spawn monitoring sessions:
+spawn "➡️  Right Screen"
+spawn "⬅️  Left Screen"
+
+
+case $1 in
+    "") # t
+        listMonitors
+    ;;
+    *)
+        session_id=$(getMonitorId "${1}")
+        shift;
+        case $1 in
+            "") # t <session>
+                listWindows "${session_id}"
+            ;;
+            *)
+                window_name="${1}"
+                shift;
+                case $1 in
+                    "") # t <session> <window>
+                        selectWindow "${session_id}" "${window_name}"
+                    ;;
+                    *)
+                        cmd=$@
+                        spawnWindow "${session_id}" "${window_name}" "$@"
+                    ;;
+                esac;
+            ;;
+        esac;
+    ;;
+esac;
