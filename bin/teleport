@@ -6,7 +6,7 @@ tunPort=9876;
 screenSessId="teleport_$$"
 
 if [ "${1}" = "-h" ]; then
-    echo "U";
+    echo "";
     echo " 🚀 Ｔｅｌｅｐｏｒｔ";
     echo "    －－－－－－－－";
     echo "";
@@ -204,7 +204,8 @@ send " # Close this terminal to return home...\r"
 send "\r"
 
 ## Open bash session and umount on exit
-send "cd ${dstPath};bash;cd ..;fuser -k -TERM ${dstPath};sleep 1;fuser -k ${dstPath};fusermount3 -u ${dstPath} && rmdir ${dstPath} && exit\r"
+send "cd ${dstPath};bash;cd ..;fuser -k -TERM ${dstPath};sleep 1;fuser -k ${dstPath};fusermount3 -u ${dstPath} && rmdir ${dstPath}\r"
+##############&& exit\r"
 
 expect "$ "
 
@@ -213,6 +214,7 @@ expect "$ "
 
 !EOF
 
+sleep 1
 screen -r ${screenSessId}
 
 echo " # ==================\r"

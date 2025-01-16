@@ -33,20 +33,39 @@ ab :email: 📧
 ab :computer: 💻
 ab :sandclock: ⏳
 ab :stopwatch: ⏱
-ab :arrow_right: ➡️
-ab :arrow_left: ⬅️
-ab :arrow_up: ⬆️
-ab :arrow_down: ⬇️
-ab :arrow_sides: ↔️
-ab :arrow_updown: ↕️
-ab :arrow_upleft: ↖️
-ab :arrow_upright: ↗️
-ab :arrow_downleft: ↘️
-ab :arrow_downright: ↙️
+
+ab :arrow_right: →
+ab :arrow_left: ←
+ab :arrow_up: ↑
+ab :arrow_down: ↓
+ab :arrow_sides: ↔
+ab :arrow_updown: ↕
+ab :arrow_upleft: ↖
+ab :arrow_upright: ↗
+ab :arrow_downleft: ↘
+ab :arrow_downright: ↙
 ab :arrow_returnup: ⤴️
 ab :arrow_returndown: ⤵️
-ab :arrow_returnright: ↪️
-ab :arrow_returnleft: ↩️
+ab :arrow_returnright: ↪
+ab :arrow_returnleft: ↩
+
+ab :barrow_right: ➡️
+ab :barrow_left: ⬅️
+ab :barrow_up: ⬆️
+ab :barrow_down: ⬇️
+ab :barrow_sides: ↔️
+ab :barrow_updown: ↕️
+ab :barrow_upleft: ↖️
+ab :barrow_upright: ↗️
+ab :barrow_downleft: ↘️
+ab :barrow_downright: ↙️
+ab :barrow_returnup: ⤴️
+ab :barrow_returndown: ⤵️
+ab :barrow_returnright: ↪️
+ab :barrow_returnleft: ↩️
+
+
+
 ab :lock: 🔒
 ab :question: ❓
 ab :magnif: 🔍
