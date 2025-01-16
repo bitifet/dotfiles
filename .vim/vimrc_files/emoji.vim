@@ -113,6 +113,20 @@ ab :bell: 🔔
 ab :megaphone: 📢
 ab :fire: 🔥
 ab :firefighter: 🚒
+ab :rocket: 🚀
+ab :0: 0️⃣
+ab :1: 1️⃣
+ab :2: 2️⃣
+ab :3: 3️⃣
+ab :4: 4️⃣
+ab :5: 5️⃣
+ab :6: 6️⃣
+ab :7: 7️⃣
+ab :8: 8️⃣
+ab :9: 9️⃣
+ab :10: 🔟
+ab :#: #️⃣
+ab :*: *️⃣
 
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
