@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Required setup:
+# ===============
+# sudo apt install python3-pip
+# pip3 install --user nvim-remote
+
+
+screen_pid=$(pstree -ps $$ | perl -ne '/screen\((\d+)\)/ && print $1')
+
+if [[
+    -n "${screen_pid}"
+    && -n $(screen -ls ${screen_pid})
+]]; then
+    # running from nvim screen session
+    nvr --remote-send "<F12>:tabedit ${1}<Enter>";
+else 
+    # Running from shell
+    nvim $@;
+fi;
