@@ -1,8 +1,7 @@
 *
+!.config/nvim/**
 !.vimrc
-!.vim
-!.vim/*
-!.vim/*/*
+!.vim/**
 **.sw[po]
 #!bin
 #!bin/*
