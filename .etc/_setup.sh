@@ -61,3 +61,4 @@ echo "Setting vim as default editor:"
 sudo update-alternatives --set editor /usr/bin/vim.basic && echo "Ok."
 
 
+source ~/.etc/setup_scripts/lazy.nvim.sh

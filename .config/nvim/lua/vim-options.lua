@@ -47,13 +47,16 @@ vim.cmd ("noremap j gj")
 vim.cmd ("noremap k gk")
 
 
-
 -- Fielutils:
 vim.cmd('command! Diff :w<space>!diff<space>-<space>%|less')
 vim.cmd("command! Recovered :!<space>rm<space>$(echo<space>%<space>|perl<space>-pe<space>'s/^(.*\\/)?\\.?(.*)$/\\1.\\2.swp\\*/')")
 vim.cmd('command! Path :!echo<space>%:p')
 
+-- File name heading with ff:
+vim.cmd ("nmap ff <esc>ggO<esc>cc// <c-r>%<esc>yypwv$r=0j")
 
+-- <ESC><ESC> resets highithed text (after search):
+vim.cmd ("nmap <esc><esc> :noh<enter>")
 
 
 -- ┏━┓┏━╸┏┓╻╺┳┓╻┏┓╻┏━╸ 
@@ -79,4 +82,38 @@ vim.cmd('command! Path :!echo<space>%:p')
 -- :map <f9> :redraw!<cr>
 -- imap <f9> <esc><f9>a
 -- "}}}
+
+
+
+---=======
+
+
+
+-- Formatting:
+-- Json:
+vim.cmd (":command! -range Json <line1>,<line2>:!python3<space>-m<space>json.tool")
+
+-- Csv: (Convert selection to from SQL output to CSV)
+--vim.cmd (":command! -range Csv <line1>,<line2>:s/^\s*/\"/|<line1>,<line2>:s/\s*|\s*/\";\"/g|<line1>,<line2>:s/\s*$/\"/|<line1>,<line2>:g/^\"[-+]*\"$/d")
+
+-- F8 key -> Switch visually selected text between PUG and HTML:
+vim.cmd (":vmap <F8> :!carlino<enter>")
+
+-- F8 key -> Visually select all text (with no blank lines) under cursor and
+-- switch between PUG and HTML:
+vim.cmd (":nmap <F8> vip<F8>j")
+
+-- Qjs: (Quote selection as javascript string)
+--vim.cmd (":command! -range Qjs <line1>,<line2>:s/^/+ \"/|<line1>,<line2>:s/\s*$/\\n\"/g|<line1>:s/+\s//|:noh")
+
+-- ,, Convert common '|' separated SQL output to comma-separted list."{{{
+-- (suitable as other SQL input, like column names)
+-- ------------------------------------------------------------------
+--vim.cmd ("nmap ,, :s/\s*\|\s*/,<space>/g<enter>:noh<enter>
+-- Same in visual mode, but multiline:
+--vim.cmd ("vmap ,, :s/[<space>\n]*\|[<space>\n]*/,<space>/g<enter>:noh<enter>")
+
+-- Same with only spaces:
+--vim.cmd ("nmap ,,, :s/\(.\)\s\+\(.\)/\1,<space>\2/g<enter>:noh<enter>")
+-- -------------------------------------------------------------------}}}
 
