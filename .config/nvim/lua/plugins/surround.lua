@@ -1,5 +1,11 @@
 return {
-    { "tpope/vim-surround" }
+    {
+        "tpope/vim-surround"
+        , config = function()
+            -- Change surround of (whole) single row (excluding identation):
+            vim.cmd("nmap cs- ^v$hS")
+        end
+    }
     -- {
     --     "kylechui/nvim-surround",
     --     version = "*", -- Use for stability; omit to use `main` branch for the latest features
