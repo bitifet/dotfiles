@@ -1,6 +1,7 @@
 return {
     -- plugins/telescope.lua:
     -- Requires: sudo apt install ripgrep
+    -- https://github.com/nvim-telescope/telescope.nvim?tab=readme-ov-file#pickers
     {
         'nvim-telescope/telescope.nvim', tag = '0.1.8',
         dependencies = { 'nvim-lua/plenary.nvim' },

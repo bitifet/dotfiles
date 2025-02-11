@@ -19,11 +19,16 @@ vim.cmd('set rulerformat=%55(%F\\ \\ \\ \\ %=%c,%l/%L\\ \\ \\ \\ %P%)') -- Ruler
 vim.cmd('set showbreak=\\|')
 
 
+
 -- [F11]: Invert list markers and paste mode: {{{
 vim.cmd('noremap <F11> :set<space>invlist<enter>:set<space>invpaste<enter>')
 vim.cmd('imap <F11> <esc><F11>a')
 -- Not working???? inoremap <F11> <ESC>:set<space>invlist<enter>:set<space>invpaste<enter><a>
 -- }}}
+
+
+-- Syntax fixings:
+vim.cmd('autocmd Syntax sql call set commentstring=--%s')
 
 
 vim.cmd(':set colorcolumn=80')
