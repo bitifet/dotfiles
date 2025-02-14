@@ -3,8 +3,7 @@
 -- Local functions definitions --
 -- --------------------------- --
 
--- Define a local function for reuse
-local function find_files_from_current_dir()
+local function telescope_picker_from_current_dir(picker)
     local bufname = vim.api.nvim_buf_get_name(0)  -- Get buffer name
     local filetype = vim.bo.filetype  -- Get current buffer's filetype
     local dir
@@ -15,12 +14,17 @@ local function find_files_from_current_dir()
         dir = vim.fn.fnamemodify(bufname, ":h")  -- Extract directory from file path
     end
 
-    require("telescope.builtin").find_files({ search_dirs = { dir } })
+    local telescope_builtin = require("telescope.builtin")
     
-    vim.schedule(function()
-        vim.api.nvim_input("<Esc>")
-    end)
+    if telescope_builtin[picker] then
+        telescope_builtin[picker]({ search_dirs = { dir } })
+    else
+        vim.notify("Invalid Telescope picker: " .. picker, vim.log.levels.ERROR)
+        return
+    end
+    
 end
+
 
 -- ---------------------------- --
 -- /Local functions definitions --
@@ -64,38 +68,44 @@ vim.cmd("nmap ygip yiwgip")
 
 -- Tab management:
 -- ------------------------
--- (ñ)
--- hjkl - hl (left - right)
--- Tab-Left - Tab-Right
--- Ctrl+... (Move)
--- ------------------------
+
+-- Tab switching:
 vim.cmd("map ñh :tabp<enter>")
     -- Select previous (left) tab
 vim.cmd("map ñl :tabn<enter>")
     -- Select next (right) tab
+
+-- Tab movement:
 vim.cmd("map ñ<c-h> :tabm<space>-1<enter>")
     -- Move current tab to the left
 vim.cmd("map ñ<c-l> :tabm<space>+1<enter>")
     -- Move current tab to the right
 
+-- Tab creation:
+vim.cmd("nmap ñk :tabe<space>%:p:h<cr>")
+    -- New tab (Netrw file manager)
+vim.cmd("nmap ñK :tabe<cr>")
+    -- New tab (New unnamed buffer)
+vim.cmd("nmap ñgf :tabedit<space><cfile><CR>")
+    -- ñgf - Like gf but in tabs:
 
--- ------------------------
--- (ñ)
--- hjkl - jk (down - up)
--- (Down) - Buffer management:
---   j: Switch buffer in Telescope.
---   ...
--- (Up) - New tab:
---   k: Netrw in current file directory.
---   K: Unnamed emtpy buffer.
+
+-- Buffer management:
 -- ------------------------
 
+-- Buffer switching:
 vim.cmd("nmap ñj :lua<space>require'telescope.builtin'.buffers()<cr><esc>")
-    -- Buffer switching.
-vim.cmd("nmap ñjj :e<space>%:p:h<cr>")
-    -- Netrw file manager
-vim.keymap.set("n", "ñjjj", find_files_from_current_dir, { noremap = true, silent = true })
-    -- Telescope file finder
+    -- Buffer switching (with Telescope).
+
+vim.cmd("nmap ño :e<space>%:p:h<cr>")
+    -- Open file through netrw file manager
+
+vim.keymap.set("n", "ñf", function() telescope_picker_from_current_dir("find_files") end, { noremap = true, silent = true })
+    -- Find file through Telescope in current directory
+
+vim.keymap.set("n", "ñg", function() telescope_picker_from_current_dir("live_grep") end, { noremap = true, silent = true })
+    -- Grep files through Telescope from current directory
+
 -- vim.api.nvim_create_autocmd("FileType", {
 --     pattern = "netrw",
 --     callback = function()
@@ -107,21 +117,11 @@ vim.keymap.set("n", "ñjjj", find_files_from_current_dir, { noremap = true, sile
     -- Telescope finder in netrw buffers (pick selected directory)
     -- 🚧  Does not yet work!!
 
-vim.cmd("nmap ñg :lua<space>require'telescope.builtin'.live_grep()<cr>")
-    -- Telescope grep finder
-
 vim.cmd("nmap ñx :bd<cr>")
     -- Close buffer
 vim.cmd("nmap ñn :enew<cr>")
     -- Create new unnamed buffer
 
-vim.cmd("nmap ñk :tabe<space>%:p:h<cr>")
-    -- New tab (Netrw file manager)
-vim.cmd("nmap ñK :tabe<cr>")
-    -- New tab (New unnamed buffer)
-
----- (vim.cmd("nmap ñj :Telescope buffers<cr>")
---vim.cmd("nmap ñJ :e<space>%:p:h<cr>")
 
 
 -- ------------------------
@@ -130,9 +130,6 @@ vim.cmd("nmap ñK :tabe<cr>")
 
 -- ñu - Buffer change undo / switch.
 vim.cmd("nmap ñu :buf<space>#<cr>")
-
--- gf in tabs:
-vim.cmd("nmap ñgf :tabedit<space><cfile><CR>")
 
 -- ñy "Cross-session" yank.
 vim.cmd("noremap ñy :w!<space>~/.vim/clipboard.txt<enter>")
