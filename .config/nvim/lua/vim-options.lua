@@ -19,9 +19,9 @@ vim.cmd('set rulerformat=%55(%F\\ \\ \\ \\ %=%c,%l/%L\\ \\ \\ \\ %P%)') -- Ruler
 vim.cmd('set showbreak=\\|')
 
 -- Clipboard copy & paste:
-vim.cmd('vmap <leader><c-c> "+y')
-vim.cmd('vmap <leader><c-x> "+d')
-vim.cmd('nmap <leader><c-v> "+P')
+vim.cmd([[vmap <leader><c-y> "+y]]) -- Cannot use <C-c>
+vim.cmd([[vmap <leader><c-x> "+d]])
+vim.cmd([[nmap <leader><c-v> "+P]])
 
 
 -- [F11]: Invert list markers and paste mode: {{{
