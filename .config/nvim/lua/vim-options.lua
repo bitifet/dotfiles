@@ -18,6 +18,10 @@ vim.cmd('set showtabline=2') -- Remember which file is opened having multiple se
 vim.cmd('set rulerformat=%55(%F\\ \\ \\ \\ %=%c,%l/%L\\ \\ \\ \\ %P%)') -- Ruler with current file path
 vim.cmd('set showbreak=\\|')
 
+-- Clipboard copy & paste:
+vim.cmd([[vmap <leader><c-y> "+y]]) -- Cannot use <C-c>
+vim.cmd([[vmap <leader><c-x> "+d]])
+vim.cmd([[nmap <leader><c-v> "+P]])
 
 
 -- [F11]: Invert list markers and paste mode: {{{
