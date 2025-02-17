@@ -8,8 +8,10 @@ local function telescope_picker_from_current_dir(picker)
     local filetype = vim.bo.filetype  -- Get current buffer's filetype
     local dir
 
-    if filetype == "netrw" or bufname == "" then
-        dir = vim.fn.getcwd()  -- Use working directory for Netrw or unnamed buffers
+    if filetype == "netrw" then
+        dir = vim.b.netrw_curdir or vim.fn.getcwd()  -- Use netrw current directory or working directory
+    elseif bufname == "" then
+        dir = vim.fn.getcwd()  -- Use working directory for unnamed buffers
     else
         dir = vim.fn.fnamemodify(bufname, ":h")  -- Extract directory from file path
     end
@@ -22,9 +24,7 @@ local function telescope_picker_from_current_dir(picker)
         vim.notify("Invalid Telescope picker: " .. picker, vim.log.levels.ERROR)
         return
     end
-    
 end
-
 
 -- ---------------------------- --
 -- /Local functions definitions --
