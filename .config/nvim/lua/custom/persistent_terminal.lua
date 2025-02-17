@@ -4,6 +4,18 @@ local terminal_win = nil -- Store floating window ID
 local screen_session = "nvim_" .. vim.fn.getpid()
 
 function M.toggle_persistent_terminal()
+  local bufname = vim.api.nvim_buf_get_name(0)  -- Get buffer name
+  local filetype = vim.bo.filetype  -- Get current buffer's filetype
+  local dir
+
+  if filetype == "netrw" then
+    dir = vim.b.netrw_curdir or vim.fn.getcwd()  -- Use netrw current directory or working directory
+  elseif bufname == "" then
+    dir = vim.fn.getcwd()  -- Use working directory for unnamed buffers
+  else
+    dir = vim.fn.fnamemodify(bufname, ":h")  -- Extract directory from file path
+  end
+
   if terminal_win and vim.api.nvim_win_is_valid(terminal_win) then
     vim.defer_fn(function()
       vim.api.nvim_win_close(terminal_win, true)
@@ -22,13 +34,12 @@ function M.toggle_persistent_terminal()
     }
     terminal_win = vim.api.nvim_open_win(buf, true, opts)
 
-    -- Start or attach to a persistent 'screen' session
-    vim.fn.termopen("screen -UdRR " .. screen_session .. "; exit")
+    -- Start or attach to a persistent 'screen' session in the current directory
+    vim.fn.termopen("cd " .. dir .. " && screen -UdRR " .. screen_session .. "; exit")
 
     vim.cmd("startinsert")
   end
 end
-
 vim.api.nvim_set_keymap("n", "<F12>", ":lua require'custom.persistent_terminal'.toggle_persistent_terminal()<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("t", "<F12>", "<C-\\><C-n>:lua require'custom.persistent_terminal'.toggle_persistent_terminal()<CR>", { noremap = true, silent = true })
 
