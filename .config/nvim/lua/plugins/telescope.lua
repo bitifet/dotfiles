@@ -6,6 +6,9 @@ return {
         'nvim-telescope/telescope.nvim', tag = '0.1.8',
         dependencies = { 'nvim-lua/plenary.nvim' },
         config = function()
+            if vim.fn.executable('rg') == 0 then
+                vim.api.nvim_echo({{"Warning: ripgrep is not installed. Some features may not work.", "WarningMsg"}}, true, {})
+            end
             local builtin = require('telescope.builtin')
             vim.keymap.set('n', '<leader>fi', builtin.current_buffer_fuzzy_find, { desc = 'Telescope find inside buffer' })
             vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Telescope find files' })
@@ -19,6 +22,8 @@ return {
             vim.keymap.set('n', '<leader>fr', builtin.registers, { desc = 'Telescope search registers' })
             vim.keymap.set('n', '<leader>fM', builtin.man_pages, { desc = 'Telescope search man pages' })
             vim.keymap.set('n', '<leader>gc', builtin.git_commits, { desc = 'Telescope git commits' })
+            vim.keymap.set('n', '<leader>gbc', builtin.git_bcommits, { desc = 'Telescope git buffer commits' })
+            vim.keymap.set('n', '<leader>gb', builtin.git_branches, { desc = 'Telescope git branches' })
         end
     }
 }
