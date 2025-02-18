@@ -31,6 +31,11 @@ end
 -- ---------------------------- --
 
 
+vim.cmd([[map <Up> <c-u>]])
+vim.cmd([[map <Down> <c-d>]])
+
+
+
 -- Text blocks skip:
 vim.cmd("map <c-j> /^\\s*$<enter>:noh<enter>")
 vim.cmd("map <c-k> ?^\\s*$<enter>:noh<enter>")
