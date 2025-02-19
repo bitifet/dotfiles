@@ -3,7 +3,8 @@
 -- Local functions definitions --
 -- --------------------------- --
 
-local function telescope_picker_from_current_dir(picker)
+local function telescope_picker_from_current_dir(picker, send_escape)
+
     local bufname = vim.api.nvim_buf_get_name(0)  -- Get buffer name
     local filetype = vim.bo.filetype  -- Get current buffer's filetype
     local dir
@@ -17,9 +18,12 @@ local function telescope_picker_from_current_dir(picker)
     end
 
     local telescope_builtin = require("telescope.builtin")
-    
+
     if telescope_builtin[picker] then
         telescope_builtin[picker]({ search_dirs = { dir } })
+        if send_escape then
+            vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
+        end
     else
         vim.notify("Invalid Telescope picker: " .. picker, vim.log.levels.ERROR)
         return
@@ -65,6 +69,17 @@ vim.cmd("nmap <c-m> <c-y>")
 vim.cmd("nmap gip gi<esc>pa")
 vim.cmd("nmap ygip yiwgip")
 
+
+-- ==========
+-- Telescope:
+-- ==========
+
+vim.keymap.set("n", "<f1>", function() telescope_picker_from_current_dir("keymaps", true) end, { noremap = true, silent = true, desc = "Telescope keymaps" })
+vim.keymap.set("n", "<f2>", function() telescope_picker_from_current_dir("builtin", true) end, { noremap = true, silent = true, desc = "Telescope built-in pickers" })
+vim.keymap.set("n", "<f3>", function() telescope_picker_from_current_dir("oldfiles", true) end, { noremap = true, silent = true, desc = "Telescope old files" })
+vim.keymap.set("n", "<f4>", function() telescope_picker_from_current_dir("git_status", true) end, { noremap = true, silent = true, desc = "Telescope git status" })
+
+vim.keymap.set("n", "<leader><backspace>", function() telescope_picker_from_current_dir("jumplist", true) end, { noremap = true, silent = true })
 
 -- ===========
 -- ñ-commands:

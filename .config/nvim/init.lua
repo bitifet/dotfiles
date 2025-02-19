@@ -46,7 +46,7 @@ vim.cmd("so ~/.vim/vimrc_files/svn.vim")
 vim.cmd("so ~/.vim/vimrc_files/git.vim")
 vim.cmd("so ~/.vim/vimrc_files/mappings.vim")
 vim.cmd("so ~/.vim/vimrc_files/formatting.vim")
-vim.cmd("so ~/.vim/vimrc_files/run.vim")
+-- vim.cmd("so ~/.vim/vimrc_files/run.vim") -- REVEIW!!!: (overlaps F2)
 vim.cmd("so ~/.vim/vimrc_files/netrw.vim")
 -- vim.cmd("so ~/.vim/vimrc_files/misc.vim")
 
