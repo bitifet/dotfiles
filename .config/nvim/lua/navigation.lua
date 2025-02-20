@@ -102,10 +102,8 @@ vim.cmd("map ñ<c-l> :tabm<space>+1<enter>")
     -- Move current tab to the right
 
 -- Tab creation:
-vim.cmd("nmap ñk :tabe<space>%:p:h<cr>")
+vim.cmd("nmap ño :tabe<space>%:p:h<cr>")
     -- New tab (Netrw file manager)
-vim.cmd("nmap ñK :tabe<cr>")
-    -- New tab (New unnamed buffer)
 vim.cmd("nmap ñgf :tabedit<space><cfile><CR>")
     -- ñgf - Like gf but in tabs:
 
@@ -113,18 +111,36 @@ vim.cmd("nmap ñgf :tabedit<space><cfile><CR>")
 -- Buffer management:
 -- ------------------------
 
--- Buffer switching:
-vim.cmd("nmap ñj :lua<space>require'telescope.builtin'.buffers()<cr><esc>")
-    -- Buffer switching (with Telescope).
+-- ☀️  Open Buffer switching:
+-- In place
+vim.keymap.set("n", "ñj", function()
+    telescope_picker_from_current_dir("buffers", true)
+end, { noremap = true, silent = true, desc = "Telescope: Switch buffer" })
+-- In a new tab
+vim.keymap.set("n", "ñJ", function()
+    vim.cmd("tabnew")
+    telescope_picker_from_current_dir("buffers", true)
+end, { noremap = true, silent = true, desc = "Telescope: Switch buffer in new tab" })
 
-vim.cmd("nmap ño :e<space>%:p:h<cr>")
-    -- Open file through netrw file manager
+-- ☀️  Open file through Netrw file manager:
+-- In place
+vim.keymap.set("n", "ñk", ":e %:p:h<CR>", { noremap = true, silent = true, desc = "Netrw file manager" })
 
-vim.keymap.set("n", "ñf", function() telescope_picker_from_current_dir("find_files") end, { noremap = true, silent = true })
-    -- Find file through Telescope in current directory
+-- In a new tab
+vim.keymap.set("n", "ñK", ":tabe %:p:h<CR>", { noremap = true, silent = true, desc = "Netrw file manager in new tab" })
 
-vim.keymap.set("n", "ñg", function() telescope_picker_from_current_dir("live_grep") end, { noremap = true, silent = true })
-    -- Grep files through Telescope from current directory
+
+-- ☀️  Search files through Telescope:
+-- Find files from current directory
+vim.keymap.set("n", "ñf", function()
+    telescope_picker_from_current_dir("find_files")
+end, { noremap = true, silent = true, desc = "Telescope: Find files from curent directory" })
+
+-- Grep files from current directory
+vim.keymap.set("n", "ñg", function()
+    telescope_picker_from_current_dir("live_grep")
+end, { noremap = true, silent = true, desc = "Telescope: Live grep files from current directory" })
+
 
 -- vim.api.nvim_create_autocmd("FileType", {
 --     pattern = "netrw",
@@ -137,10 +153,11 @@ vim.keymap.set("n", "ñg", function() telescope_picker_from_current_dir("live_gr
     -- Telescope finder in netrw buffers (pick selected directory)
     -- 🚧  Does not yet work!!
 
-vim.cmd("nmap ñx :bd<cr>")
-    -- Close buffer
+-- ☀️  Open / Close buffers:
+-- Create new unnamed buffer
 vim.cmd("nmap ñn :enew<cr>")
-    -- Create new unnamed buffer
+-- Close buffer
+vim.cmd("nmap ñx :bd<cr>")
 
 
 
