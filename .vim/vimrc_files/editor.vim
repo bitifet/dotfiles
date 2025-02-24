@@ -1,5 +1,7 @@
 
 
+"""" Buffer handling
+set hidden           " Allow buffer switching without saving
 
 """" Searching and Patterns
 set ignorecase       " search is case insensitive

@@ -36,6 +36,13 @@ silent !echo 'bindkey -k F2 detach' >> ~/.vim/screenrc
 silent !echo 'term xterm-256color' >> ~/.vim/screenrc
 " Change default screen's escape key to CTRL-Q to avoid conflict if vim itself is running in other screen session.
 ""silent !echo 'escape ^qa' >> ~/.vim/screenrc
+
+
+"silent !echo 'defbce "on"' >> ~/.vim/screenrc
+
+"!echo "screen -t mysession 0 bash -c 'echo -ne \"\033[48;5;18m\"; exec bash'" >> ~/.vim/screenrc
+
+
 " }}}
 
 " }}}

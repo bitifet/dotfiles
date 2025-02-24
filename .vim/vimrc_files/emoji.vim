@@ -127,6 +127,9 @@ ab :9: 9️⃣
 ab :10: 🔟
 ab :#: #️⃣
 ab :*: *️⃣
+ab :think: 🤔
+ab :detective: 🕵️
+ab :monocle: 🧐
 
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
