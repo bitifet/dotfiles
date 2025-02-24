@@ -38,6 +38,10 @@ end
 vim.cmd([[map <Up> <c-u>]])
 vim.cmd([[map <Down> <c-d>]])
 
+-- QuickFix list navigation:
+vim.cmd([[nmap <c-PageUp> :copen<cr>:cprev<cr>]])
+vim.cmd([[nmap <c-PageDown> :copen<cr>:cnext<cr>]])
+vim.cmd([[nmap <c-Esc> :close<cr>]])
 
 
 -- Text blocks skip:
