@@ -34,6 +34,22 @@ function M.toggle_persistent_terminal()
     }
     terminal_win = vim.api.nvim_open_win(buf, true, opts)
 
+
+    -- Force colors to avoid issues with some color schemes
+    vim.api.nvim_win_set_option(terminal_win, 'winhighlight', 'Normal:TermNormal')
+    vim.api.nvim_set_hl(0, 'TermNormal', {
+      -- Classic b&w:
+      fg = "#FFFFFF",  -- White foreground
+      bg = "#000000",  -- Black background
+      -- -- Green monochrome:
+      -- fg = "#00FF00",  -- Bright green foreground
+      -- bg = "#1A2A1A",  -- Dark green-gray background for contrast
+    })
+    vim.api.nvim_win_call(terminal_win, function()
+      vim.opt_local.termguicolors = true
+    end)
+
+
     -- Start or attach to a persistent 'screen' session in the current directory
     vim.fn.termopen("cd " .. dir .. " && screen -UdRR " .. screen_session .. "; exit")
 
