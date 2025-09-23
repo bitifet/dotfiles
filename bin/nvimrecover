@@ -1,0 +1,226 @@
+#!/bin/bash
+
+# Define swapfile directory
+SWAP_DIR="$HOME/.local/state/nvim/swap"
+
+# Check if required commands are installed
+if ! command -v dialog &> /dev/null; then
+    echo "Error: 'dialog' is not installed. Please install it (e.g., 'sudo apt install dialog' on Debian/Ubuntu)."
+    exit 1
+fi
+if ! command -v less &> /dev/null; then
+    echo "Error: 'less' is not installed. Please install it (e.g., 'sudo apt install less' on Debian/Ubuntu)."
+    exit 1
+fi
+if ! command -v fuser &> /dev/null; then
+    echo "Error: 'fuser' is not installed. Please install it (e.g., 'sudo apt install psmisc' on Debian/Ubuntu)."
+    exit 1
+fi
+if ! command -v script &> /dev/null; then
+    echo "Error: 'script' is not installed. Please install it (e.g., 'sudo apt install util-linux' on Debian/Ubuntu)."
+    exit 1
+fi
+
+# Check if swap directory exists
+if [ ! -d "$SWAP_DIR" ]; then
+    echo "Error: Swap directory $SWAP_DIR does not exist."
+    exit 1
+fi
+
+# Process swapfiles once at the beginning
+SWAP_FILES=($(ls -1t "$SWAP_DIR"/*.sw? 2>/dev/null))
+if [ ${#SWAP_FILES[@]} -eq 0 ]; then
+    dialog --msgbox "No swapfiles found in $SWAP_DIR." 8 40
+    exit 0
+fi
+
+# Check and filter swapfiles
+VALID_SWAP_FILES=()
+DISPLAY_NAMES=()
+TEMP_FILE=$(mktemp)
+# Flag to stop processing on Ctrl+C
+STOP_PROCESSING=0
+# Trap Ctrl+C (SIGINT) during processing
+trap 'STOP_PROCESSING=1; printf "\r%*s\r" "$(tput cols)" ""; echo "Processing interrupted by user."; trap - INT' INT
+for SWAP_FILE in "${SWAP_FILES[@]}"; do
+    # Check if user interrupted processing
+    if [ $STOP_PROCESSING -eq 1 ]; then
+        break
+    fi
+
+    # Decode the original file path from the swapfile name
+    ORIGINAL_PATH=$(basename "$SWAP_FILE" | tr '%' '/' | sed -E 's/\.sw[a-p]$//')
+    
+    # Recover swapfile contents non-interactively in background with spinner
+    script -q -c "nvim -r \"$SWAP_FILE\" -c \":w! $TEMP_FILE\" -c \":q!\"" /dev/null > /dev/null 2>&1 &
+    PID=$!
+    
+    # Display spinner while process is running
+    SPINNER="|/-\\"
+    i=0
+    while kill -0 $PID 2>/dev/null; do
+        # Check for Ctrl+C during spinner
+        if [ $STOP_PROCESSING -eq 1 ]; then
+            kill $PID 2>/dev/null
+            wait $PID 2>/dev/null
+            break
+        fi
+        printf "\rProcessing %s... %s" "$SWAP_FILE" "${SPINNER:$((i % 4)):1}"
+        i=$((i + 1))
+        sleep 0.1
+    done
+    # Clear the spinner line
+    printf "\r%*s\r" "$(tput cols)" ""
+    
+    # Wait for the process to finish and get exit status (unless interrupted)
+    if [ $STOP_PROCESSING -eq 0 ]; then
+        wait $PID
+        if [ $? -ne 0 ]; then
+            # If recovery fails, consider the swapfile corrupted and discard it
+            rm "$SWAP_FILE"
+            continue
+        fi
+    else
+        continue
+    fi
+
+    # Compare with original file
+    if [ ! -d "$ORIGINAL_PATH" ] && diff "$ORIGINAL_PATH" "$TEMP_FILE" >/dev/null 2>&1; then
+        # If recovered content matches original, discard swapfile
+        rm "$SWAP_FILE"
+        continue
+    fi
+
+    MODTIME=$(stat -c %y "$SWAP_FILE" | cut -d'.' -f1)
+
+    # Check if swapfile is in use and get PIDs
+    PIDS=$(fuser "$SWAP_FILE" 2>/dev/null | tr ' ' ',')
+    PID_SUFFIX=""
+    if [ -n "$PIDS" ]; then
+        PID_SUFFIX=" (PID: $PIDS)"
+    fi
+
+    # Set display name depending on original file existence and type
+    if [[ ! -e "$ORIGINAL_PATH" ]]; then
+        # Perhaps removed file
+        DISPLAY_NAMES+=("${MODTIME} ❌ $ORIGINAL_PATH (Missing)$PID_SUFFIX")
+    elif [ -d "$ORIGINAL_PATH" ]; then
+        # Treat as unnamed buffer with directory context
+        DISPLAY_NAMES+=("${MODTIME} 📂 $ORIGINAL_PATH (Unnamed)$PID_SUFFIX")
+    else
+        # File still exists
+        DISPLAY_NAMES+=("${MODTIME} 📝 $ORIGINAL_PATH$PID_SUFFIX")
+    fi
+
+    # Push valid swapfile
+    VALID_SWAP_FILES+=("$SWAP_FILE")
+
+    rm -f "$TEMP_FILE"
+done
+# Clean up temporary file and reset trap
+rm -f "$TEMP_FILE"
+trap - INT
+
+# Check if any valid swapfiles remain
+if [ ${#VALID_SWAP_FILES[@]} -eq 0 ]; then
+    dialog --msgbox "No valid swapfiles remain (all either match original files or were corrupted)." 8 60
+    exit 0
+fi
+
+while true; do
+    # Check if any valid swapfiles remain
+    if [ ${#VALID_SWAP_FILES[@]} -eq 0 ]; then
+        dialog --msgbox "No valid swapfiles remain." 8 60
+        exit 0
+    fi
+
+    # Prepare menu options for dialog
+    MENU_OPTIONS=()
+    for i in "${!VALID_SWAP_FILES[@]}"; do
+        MENU_OPTIONS+=("$i" "${DISPLAY_NAMES[$i]}")
+    done
+
+    # Display dialog menu
+    CHOICE=$(dialog --clear --title "Neovim Swapfile Recovery" \
+        --menu "Select a swapfile to recover or Cancel:" 20 120 8 \
+        "${MENU_OPTIONS[@]}" \
+        2>&1 >/dev/tty)
+
+    # Check if user canceled or selected Cancel option
+    if [ $? -ne 0 ] || [ "$CHOICE" = "cancel" ]; then
+        clear
+        echo "Recovery canceled."
+        exit 0
+    fi
+
+    # Validate choice
+    if [ -z "$CHOICE" ] || [ ! -f "${VALID_SWAP_FILES[$CHOICE]}" ]; then
+        dialog --msgbox "Invalid selection." 8 40
+        continue
+    fi
+
+    # Show diff for named buffers
+    TEMP_FILE=$(mktemp)
+    script -q -c "nvim -r \"${VALID_SWAP_FILES[$CHOICE]}\" -c \":w! $TEMP_FILE\" -c \":q!\"" /dev/null > /dev/null 2>&1 &
+    PID=$!
+    # Display spinner while recovering contents
+    SPINNER="|/-\\"
+    i=0
+    while kill -0 $PID 2>/dev/null; do
+        printf "\rGenerating diff for %s... %s" "${VALID_SWAP_FILES[$CHOICE]}" "${SPINNER:$((i % 4)):1}"
+        i=$((i + 1))
+        sleep 0.1
+    done
+    # Clear the spinner line
+    printf "\r%*s\r" "$(tput cols)" ""
+    wait $PID
+    if [ $? -eq 0 ]; then
+        # Set temporary file's modification time to match swapfile
+        SWAP_MODTIME=$(stat -c %y "${VALID_SWAP_FILES[$CHOICE]}" | cut -d'.' -f1)
+        touch -d "$SWAP_MODTIME" "$TEMP_FILE"
+        # Extract clean file path from DISPLAY_NAMES (remove MODTIME, emoji, and suffixes)
+        FILE_PATH=$(echo "${DISPLAY_NAMES[$CHOICE]}" | sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} (📝|📂|❌) //; s/ \((Unnamed|Missing|PID: [0-9,]+)\)$//')
+        if [ -f "$FILE_PATH" ]; then
+            # Use colordiff if available, otherwise fall back to diff
+            if command -v colordiff >/dev/null 2>&1; then
+                DIFF_CMD="colordiff -u"
+            else
+                DIFF_CMD="diff -u"
+            fi
+            # Use bat if available, otherwise fall back to less
+            if command -v bat >/dev/null 2>&1; then
+                PAGER="bat --style=plain"
+            elif command -v batcat >/dev/null 2>&1; then
+                PAGER="batcat --style=plain"
+            else
+                PAGER="less"
+            fi
+            clear
+            $DIFF_CMD "$FILE_PATH" "$TEMP_FILE" | $PAGER
+        else
+            dialog --msgbox "No diff available for unnamed or missing buffer." 8 40
+        fi
+    else
+        dialog --msgbox "Failed to recover contents from swapfile for diff." 8 40
+    fi
+    rm -f "$TEMP_FILE"
+
+    # Recover the selected swapfile interactively
+    clear
+    echo "Recovering ${VALID_SWAP_FILES[$CHOICE]}..."
+    nvim -r "${VALID_SWAP_FILES[$CHOICE]}"
+
+    # Ask if user wants to delete the swapfile after recovery
+    dialog --yesno "Do you want to delete the swapfile ${VALID_SWAP_FILES[$CHOICE]}?" 8 60
+    if [ $? -ne 0 ]; then
+        dialog --msgbox "Swapfile retained." 8 40
+    else
+        rm "${VALID_SWAP_FILES[$CHOICE]}"
+        # Remove the selected entry from VALID_SWAP_FILES and DISPLAY_NAMES
+        VALID_SWAP_FILES=("${VALID_SWAP_FILES[@]:0:$CHOICE}" "${VALID_SWAP_FILES[@]:$((CHOICE + 1))}")
+        DISPLAY_NAMES=("${DISPLAY_NAMES[@]:0:$CHOICE}" "${DISPLAY_NAMES[@]:$((CHOICE + 1))}")
+        dialog --msgbox "Swapfile deleted." 8 40
+    fi
+
+    clear
+done
