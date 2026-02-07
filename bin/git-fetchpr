@@ -1,0 +1,42 @@
+#!/bin/bash
+# Usage: git fetchpr <PR_NUMBER> [<REMOTE>]
+PR=$1
+REMOTE=${2:-origin}
+
+if [ -z "$PR" ]; then
+  echo "Usage: git fetchpr <PR_NUMBER> [<REMOTE>]"
+  exit 1
+fi
+
+# Fetch all remote branches first
+git fetch "$REMOTE"
+
+# Fetch the PR
+git fetch "$REMOTE" pull/"$PR"/head:pr-"$PR"
+
+# Find the remote branch that matches the PR's commit
+COMMIT=$(git rev-parse pr-"$PR")
+REMOTE_BRANCH=$(git branch -r --contains "$COMMIT" | \
+  grep "^  $REMOTE/" | \
+  grep -v "HEAD\|pull/" | \
+  head -1 | \
+  xargs)
+
+if [ -n "$REMOTE_BRANCH" ]; then
+  git branch pr-"$PR" --set-upstream-to="$REMOTE_BRANCH"
+  
+  # Extract just the branch name for display
+  BRANCH_NAME=$(echo "$REMOTE_BRANCH" | sed "s|$REMOTE/||")
+  
+  echo "✓ Fetched PR #$PR"
+  echo "✓ Local branch pr-$PR → $REMOTE_BRANCH"
+  echo ""
+  echo "To push changes, use:"
+  echo "  git push $REMOTE HEAD:$BRANCH_NAME"
+  echo ""
+  echo "Or configure Git to allow mismatched branch names:"
+  echo "  git config push.default upstream"
+else
+  echo "✓ Fetched PR #$PR"
+  echo "⚠ Run 'git branch pr-$PR --set-upstream-to=$REMOTE/<branch>' to set up tracking"
+fi
