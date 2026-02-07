@@ -17,6 +17,8 @@
 
 DRAFTS_BASE="${HOME}/Drafts"
 TODAY=$(date +%Y%m%d);
-DRAFTS_TODAY="${DRAFTS_BASE}/${TODAY}";
+YYYY=${TODAY:0:4};
+MM=${TODAY:4:2};
+DRAFTS_TODAY="${DRAFTS_BASE}/${YYYY}/${MM}/${TODAY}";
 mkdir -p ${DRAFTS_TODAY}
 echo $DRAFTS_TODAY;
