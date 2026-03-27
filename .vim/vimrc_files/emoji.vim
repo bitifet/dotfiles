@@ -32,7 +32,11 @@ ab :telephone: 📞
 ab :email: 📧
 ab :computer: 💻
 ab :sandclock: ⏳
-ab :stopwatch: ⏱
+ab :stopwatch: ⏱️
+
+ab :long_hyphen: —
+ab :forbid: 🚫
+ab :no_entry: ⛔
 
 ab :arrow_right: →
 ab :arrow_left: ←
@@ -130,7 +134,16 @@ ab :*: *️⃣
 ab :think: 🤔
 ab :detective: 🕵️
 ab :monocle: 🧐
-
+ab :user: 👤
+ab :users: 👥
+ab :label: 🏷️
+ab :id: 🆔
+ab :open: 🆕
+ab :ok: 🆗
+ab :close: ❎
+ab :reopened: 🔄
+ab :move: 🔀
+ab :rejected: ⛔
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
 
