@@ -15,6 +15,19 @@ ab :check_green: ✅
 ab :check_blue: ☑️
 ab :cancel: ✖️
 ab :cancel_red: ❌
+ab :minus: ➖
+ab :plus: ➕
+ab :star: ⭐
+ab :star2: 🌟
+ab :star3: ✨
+ab :heart: ❤️
+ab :heart_blue: 💙
+ab :heart_green: 💚
+ab :heart_orange: 🧡
+ab :heart_purple: 💜
+ab :heart_yellow: 💛
+ab :heart_broken: 💔
+ab :warning_red: 🚨
 ab :warning: ⚠️
 ab :bulb: 💡
 ab :pushpin: 📌
@@ -118,6 +131,7 @@ ab :megaphone: 📢
 ab :fire: 🔥
 ab :firefighter: 🚒
 ab :rocket: 🚀
+ab :brain: 🧠
 ab :0: 0️⃣
 ab :1: 1️⃣
 ab :2: 2️⃣
@@ -144,6 +158,15 @@ ab :close: ❎
 ab :reopened: 🔄
 ab :move: 🔀
 ab :rejected: ⛔
+ab :wheelchair: ♿
+ab :accessibility: 🦽
+ab :deaf: 🦻
+ab :blind: 🦯
+ab :guide_dog: 🦮
+ab :garbage: 🗑️
+ab :garbage2: 🚮
+
+ab :mindblow: 🤯
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
 
