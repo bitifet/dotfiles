@@ -110,6 +110,9 @@ cdwt() {
     return 1
   fi
 
+  # Remove duplicates:
+  mapfile -t matches < <(printf '%s\n' "${matches[@]}" | sort -u)
+
   case "${#matches[@]}" in
     0)
       echo "cdwt: no worktree found for '$target'" >&2
