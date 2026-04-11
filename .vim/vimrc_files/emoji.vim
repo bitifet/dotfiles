@@ -166,6 +166,26 @@ ab :guide_dog: 🦮
 ab :garbage: 🗑️
 ab :garbage2: 🚮
 
+ab :pentagram: 🟊
+ab :emptypentagram: ⛤
+
+ab :=>: ⇒
+ab :!=>: ⇏
+ab :<=: ⇐
+ab :!<=: ⇍
+ab :<=>: ⇔
+ab :!<=>: ⇎
+
+ab :->: ➔
+ab :3->: ⇶
+
+ab :d1: ⚀
+ab :d2: ⚁
+ab :d3: ⚂
+ab :d4: ⚃
+ab :d5: ⚄
+ab :d6: ⚅
+
 ab :mindblow: 🤯
 
 :command Smile !less<space>~/.vim/vimrc_files/emoji.vim
