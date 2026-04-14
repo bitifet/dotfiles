@@ -30,17 +30,17 @@ return {
         -- https://github.com/neovim/nvim-lspconfig
         "neovim/nvim-lspconfig"
         , config = function()
-            local lspconfig = require("lspconfig")
-            lspconfig.lua_ls.setup({})
-            lspconfig.ts_ls.setup({})
-            -- lspconfig.bash_ls.setup({})
-            lspconfig.html.setup({})
-            lspconfig.cssls.setup({})
-            -- lspconfig.jqls.setup({})
-            -- lspconfig.spectral.setup({})
-            lspconfig.remark_ls.setup({})
-            --lspconfig.pylsp.setup({})
-            lspconfig.sqlls.setup({})
+            vim.lsp.config["lua_ls"] = {
+                cmd = { "lua_ls" },
+                on_init = function(client)
+                    client.config.settings = vim.tbl_deep_extend("force", client.config.settings, {["lua-ls"] = { runtime = { version = "Lua 5.1" } } })
+                end,
+            }
+            vim.lsp.config["ts_ls"] = { cmd = { "ts_ls" } }
+            vim.lsp.config["html"] = { cmd = { "html" } }
+            vim.lsp.config["cssls"] = { cmd = { "cssls" } }
+            vim.lsp.config["remark_ls"] = { cmd = { "remark_ls" } }
+            vim.lsp.config["sqlls"] = { cmd = { "sqlls" } }
             vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
             vim.keymap.set("n", "gd", vim.lsp.buf.definition, {})
             vim.keymap.set({"n", "v"}, "<leader>ca", vim.lsp.buf.code_action, {})
