@@ -62,7 +62,25 @@ EOF
   } | less -R -F
 }
 
-alias lswt='git worktree list'
+#alias lswt='git worktree list'
+lswt() {
+  local commit_hash head_short branch_mark
+  head_short=$(git rev-parse --short HEAD)
+  while IFS= read -r line; do
+    # Extract commit hash (second field)
+    commit_hash=$(echo "$line" | awk '{print $2}')
+    if [ "$commit_hash" = "$head_short" ]; then
+      branch_mark="✅ "
+    elif git merge-base --is-ancestor "$commit_hash" HEAD 2>/dev/null; then
+      branch_mark="✔️ "
+    else
+      branch_mark="   "
+    fi
+    # Insert mark before commit hash
+    echo "$line" | sed -E "s/([[:space:]]+)($commit_hash)/\1$branch_mark\2/"
+  done < <(git worktree list)
+}
+
 
 cdwt() {
   local target="${1:-main}"
