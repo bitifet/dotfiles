@@ -146,3 +146,16 @@ cdwt() {
       ;;
   esac
 }
+
+
+rmwt() {
+  local target="${1:-}"
+
+  if [ -z "$target" ]; then
+    echo "Usage: rmwt <worktree-path-or-branch>" >&2
+    return 1
+  fi
+
+  git worktree remove "${target}" && git branch -d "$(basename "${target}")"
+};
+
