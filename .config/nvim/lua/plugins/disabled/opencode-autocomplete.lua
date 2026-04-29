@@ -1,0 +1,28 @@
+-- ~/.config/nvim/lua/plugins/opencode.lua
+return {
+--   "silvabyte/opencode.nvim",
+--   dependencies = { "nvim-lua/plenary.nvim" },
+--   -- Use "VeryLazy" if you want voice commands available immediately
+--   -- Use "InsertEnter" if you only need completions
+--   event = "VeryLazy",
+--   config = function()
+--     require("opencode").setup({
+--         -- Options
+--         completion = {
+--           auto_trigger = true,   -- complete as you type
+--           debounce = 150,        -- ms to wait
+--           accept_key = "<Tab>",
+--           dismiss_key = "<C-e>",
+--           --etc
+--         },
+--         model = {
+--           provider = "opencode",
+--           -- model_id = "claude-sonnet-4-20250514",
+--           model_id = "openai/gpt-5.4-mini-fast",
+--           -- or big pickle, big pickle, big pickle!
+--           -- provider = "opencode",
+--           -- model_id = "big-pickle"
+--         }
+--     })
+--     end,
+}
