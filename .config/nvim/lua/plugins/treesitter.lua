@@ -10,7 +10,7 @@ return {
                     "lua", "javascript", "python", "bash", "sql",
                     "go", "ruby", "java", "php", "json", "yaml",
                     "toml", "markdown", "vim", "query", "html", "css",
-                    "markdown_inline"
+                    "markdown_inline", "pug"
                 },
                 ensure_installed_sync = true,
                 highlight = { enable = true },
