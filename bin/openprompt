@@ -1,0 +1,165 @@
+#!/usr/bin/env node
+
+const http = require('http');
+const { URL } = require('url');
+
+function makeRequest(options, data) {
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode, body }));
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+function buildJsonRequest(url, method, body) {
+  const parsed = new URL(url);
+  return {
+    hostname: parsed.hostname,
+    port: parsed.port,
+    path: parsed.pathname,
+    method: method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(body)
+    }
+  };
+}
+
+async function clearPrompt(server) {
+  const url = `${server}/tui/clear-prompt`;
+  await makeRequest(buildJsonRequest(url, 'POST', '{}'), '{}');
+}
+
+async function appendPrompt(server, text) {
+  const url = `${server}/tui/append-prompt`;
+  const body = JSON.stringify({ text });
+  await makeRequest(buildJsonRequest(url, 'POST', body), body);
+}
+
+async function submitPrompt(server) {
+  const url = `${server}/tui/submit-prompt`;
+  await makeRequest(buildJsonRequest(url, 'POST', '{}'), '{}');
+}
+
+async function sendPrompt(port) {
+  const server = `http://localhost:${port}`;
+
+  await clearPrompt(server);
+
+  const readline = require('readline');
+  const rl = readline.createInterface({ input: process.stdin });
+
+  for await (const line of rl) {
+    await appendPrompt(server, line + '\n');
+  }
+
+  rl.close();
+  await submitPrompt(server);
+}
+
+function listenForFinalAnswer(port) {
+  return new Promise((resolve, reject) => {
+    const url = `http://localhost:${port}/event`;
+    const parsed = new URL(url);
+
+    const req = http.request({
+      hostname: parsed.hostname,
+      port: parsed.port,
+      path: parsed.pathname,
+      method: 'GET',
+      headers: { 'Accept': 'text/event-stream' }
+    }, (res) => {
+      let buffer = '';
+      const userMessageIDs = new Set();
+
+      res.on('data', (chunk) => {
+        buffer += chunk.toString();
+
+        // Split by double newline (SSE event separator)
+        while (buffer.includes('\n\n')) {
+          const eventEnd = buffer.indexOf('\n\n');
+          const eventData = buffer.slice(0, eventEnd);
+          buffer = buffer.slice(eventEnd + 2);
+
+          // Extract data lines
+          const lines = eventData.split('\n');
+
+          let jsonStr = '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              jsonStr += line.slice(6);
+            }
+          }
+
+          if (!jsonStr.trim()) continue;
+
+          try {
+            const event = JSON.parse(jsonStr);
+
+            // Track user message IDs
+            if (event.type === 'message.updated' && event.properties?.info?.role === 'user') {
+              userMessageIDs.add(event.properties.info.id);
+            }
+
+            // Check for session.idle to detect completion
+            if (event.type === 'session.idle') {
+              process.stdout.write('\n');
+              req.destroy();
+              res.destroy();
+              resolve();
+              return;
+            }
+
+            const part = event.properties?.part;
+            if (!part) continue;
+
+            // Filter out user input by checking messageID
+            if (part.messageID && userMessageIDs.has(part.messageID)) {
+              continue;
+            }
+
+            if (part.type === 'text' && part.text != null && part.text !== '') {
+              process.stdout.write(part.text);
+            }
+          } catch (e) {
+          }
+        }
+      });
+
+      res.on('end', () => {
+        resolve();
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+async function main() {
+  let port = 4096;
+
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--help') {
+      console.error('Usage: node openprompt.js [port]');
+      process.exit(0);
+    } else if (!isNaN(args[i]) && /^\d+$/.test(args[i])) {
+      port = parseInt(args[i], 10);
+    }
+  }
+
+  await sendPrompt(port);
+  await listenForFinalAnswer(port);
+}
+
+main().catch((err) => {
+  console.error('Error:', err.message);
+  process.exit(1);
+});
