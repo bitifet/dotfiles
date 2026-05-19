@@ -170,7 +170,7 @@ switch_to_server() {
 # KILL MODE
 # ---------------------------------------------------------------------------
 if [ "$KILL_MODE" -eq 1 ]; then
-  PARENT_SF=$(find_parent_statefile)
+  PARENT_SF=$(find_parent_statefile) || true
   if [ -z "$PARENT_SF" ]; then
     echo "Error: no opencode server found in $CURRENT_DIR or any of its parents." >&2
     echo "Run 'ocmux --new' to create a new server in the current directory." >&2
@@ -218,7 +218,7 @@ fi
 # DEFAULT MODE (no arguments): search upward for existing server
 # ---------------------------------------------------------------------------
 if [ "$NEW_MODE" -eq 0 ]; then
-  PARENT_SF=$(find_parent_statefile)
+  PARENT_SF=$(find_parent_statefile) || true
   if [ -n "$PARENT_SF" ]; then
     tmux new-session -d -s "$SESSION" 2>/dev/null || true
     switch_to_server "$PARENT_SF"
@@ -234,7 +234,7 @@ fi
 # NEW MODE (--new): check parent dirs for warnings, then create
 # ---------------------------------------------------------------------------
 
-PARENT_SF=$(find_parent_statefile "$(dirname "$CURRENT_DIR")")
+PARENT_SF=$(find_parent_statefile "$(dirname "$CURRENT_DIR")") || true
 if [ -n "$PARENT_SF" ]; then
   parent_dir="$(dirname "$PARENT_SF")"
   echo "Warning: there is already an opencode server in $parent_dir."
