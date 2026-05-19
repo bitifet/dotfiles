@@ -1,0 +1,227 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly SCRIPT_NAME="$(basename "$0")"
+readonly SESSION="Opencode"
+readonly CURRENT_DIR="$(pwd)"
+readonly HASH="$(echo "$CURRENT_DIR" | md5sum | cut -c1-12)"
+readonly LOGFILE="/tmp/opencode-serve-${HASH}.log"
+readonly STATEFILE="${CURRENT_DIR}/.opencode-server.json"
+
+usage() {
+  cat <<EOF
+Usage: $SCRIPT_NAME [--kill]
+
+Manage opencode server + TUI in tmux for the current directory.
+
+  --kill   Stop the server and remove the tmux window
+  -h       Show this help
+EOF
+  exit 0
+}
+
+# --- Argument parsing ---
+KILL_MODE=0
+for arg in "$@"; do
+  case "$arg" in
+    --kill) KILL_MODE=1 ;;
+    -h|--help) usage ;;
+  esac
+done
+
+# --- Helper: find window index by name ---
+window_index_by_name() {
+  tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
+    awk -v name="$CURRENT_DIR" -F'\t' '$2 == name {print $1; exit}'
+}
+
+# --- Helper: read field from state file ---
+read_state() {
+  local field="$1"
+  grep -om1 "\"${field}\":[^,}]*" "$STATEFILE" 2>/dev/null | sed "s/\"${field}\"://; s/\"//g" || true
+}
+
+# --- Helper: find active window index in Opencode session ---
+active_window_index() {
+  tmux list-windows -t "$SESSION" -F '#{window_index} #{window_active}' 2>/dev/null | \
+    awk '$2 == "1" {print $1; exit}'
+}
+
+# --- Helper: zoom TUI pane only if not already zoomed ---
+ensure_tui_zoomed() {
+  local win_idx="$1"
+  local zoomed
+  zoomed=$(tmux list-windows -t "$SESSION" -F "#{window_index}|#{window_zoomed_flag}" 2>/dev/null | \
+    awk -F'|' -v idx="$win_idx" '$1 == idx {print $2; exit}')
+  if [ "$zoomed" = "1" ]; then
+    return  # already zoomed, don't toggle
+  fi
+  local pane
+  pane=$(tui_pane_id "$win_idx")
+  [ -n "$pane" ] && tmux resize-pane -Z -t "$pane" 2>/dev/null || true
+}
+
+# --- Helper: disable automatic-rename for a window ---
+pin_window_name() {
+  local win_idx="$1"
+  tmux set-window-option -t "${SESSION}:${win_idx}" automatic-rename off 2>/dev/null || true
+}
+
+# --- Lookup: try state file's stored index first, fall back to name search ---
+resolve_window_index() {
+  local idx
+  # Try stored index from state file
+  idx=$(read_state "window_index")
+  if [ -n "$idx" ]; then
+    local stored_name
+    stored_name=$(tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
+      awk -F'\t' -v idx="$idx" '$1 == idx {print $2; exit}')
+    if [ "$stored_name" = "$CURRENT_DIR" ]; then
+      echo "$idx"
+      return
+    fi
+  fi
+  # Fall back to name search
+  window_index_by_name
+}
+
+# --- Helper: find pane ID running opencode attach ---
+tui_pane_id() {
+  local win_idx="$1"
+  tmux list-panes -t "${SESSION}:${win_idx}" -F $'#{pane_id}\t#{pane_current_command}' 2>/dev/null | \
+    awk -F'\t' '$2 == "node" {print $1; exit}'
+}
+
+# ---------------------------------------------------------------------------
+# KILL MODE
+# ---------------------------------------------------------------------------
+if [ "$KILL_MODE" -eq 1 ]; then
+  if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+    echo "No tmux session '$SESSION' found."
+    rm -f "$STATEFILE"
+    exit 0
+  fi
+
+  WIN_IDX=$(window_index_by_name)
+  if [ -n "$WIN_IDX" ]; then
+    echo "Stopping server and removing window for $CURRENT_DIR..."
+    tmux send-keys -t "${SESSION}:${WIN_IDX}.0" C-c 2>/dev/null || true
+    sleep 0.3
+    tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
+    echo "Window removed."
+  else
+    echo "No tmux window found for $CURRENT_DIR."
+  fi
+
+  rm -f "$STATEFILE"
+  echo "Done."
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# ENSURE TMUX SESSION EXISTS
+# ---------------------------------------------------------------------------
+tmux new-session -d -s "$SESSION" 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
+# WINDOW ALREADY EXISTS — just reattach / switch
+# ---------------------------------------------------------------------------
+WIN_IDX=$(resolve_window_index)
+if [ -n "$WIN_IDX" ]; then
+  if [ ! -f "$STATEFILE" ]; then
+    echo "Error: window exists but $STATEFILE is missing." >&2
+    echo "Run '$SCRIPT_NAME --kill' to clean up, then try again." >&2
+    exit 1
+  fi
+
+  URL=$(read_state "url")
+  if [ -z "$URL" ]; then
+    echo "Error: could not read URL from $STATEFILE" >&2
+    exit 1
+  fi
+
+  pin_window_name "$WIN_IDX"
+
+  # Check if TUI is alive
+  TUI_PANE=$(tui_pane_id "$WIN_IDX")
+  if [ -z "$TUI_PANE" ]; then
+    echo "TUI pane is dead, restarting..."
+    PANE_COUNT=$(tmux list-panes -t "${SESSION}:${WIN_IDX}" -F '#{pane_id}' 2>/dev/null | wc -l)
+    if [ "$PANE_COUNT" -ge 2 ]; then
+      LAST_PANE=$(tmux list-panes -t "${SESSION}:${WIN_IDX}" -F '#{pane_id}' 2>/dev/null | tail -1)
+      tmux respawn-pane -k -t "$LAST_PANE" "opencode attach --continue '$URL'" 2>/dev/null || \
+        tmux send-keys -t "$LAST_PANE" "opencode attach --continue '$URL'" Enter
+    else
+      tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$CURRENT_DIR" \
+        "opencode attach --continue '$URL'"
+    fi
+    sleep 1
+  fi
+
+  # Only switch window if not already active in the Opencode session
+  ACTIVE_WIN=$(active_window_index)
+  if [ "$ACTIVE_WIN" != "$WIN_IDX" ]; then
+    tmux select-window -t "${SESSION}:${WIN_IDX}"
+  fi
+
+  ensure_tui_zoomed "$WIN_IDX"
+
+  echo "$URL"
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# CREATE NEW WINDOW — pane 0: opencode serve
+# ---------------------------------------------------------------------------
+echo "Starting opencode server for $CURRENT_DIR..."
+tmux new-window -d -t "$SESSION" -n "$CURRENT_DIR" -c "$CURRENT_DIR" \
+  "opencode serve --port 0 2>&1 | tee '$LOGFILE'"
+
+# Poll logfile for the URL
+URL=""
+for i in $(seq 1 50); do
+  sleep 0.2
+  URL=$(grep -om1 'opencode server listening on http://[^ ]*' "$LOGFILE" 2>/dev/null | sed 's/opencode server listening on //' || true)
+  [ -n "$URL" ] && break
+done
+
+if [ -z "$URL" ]; then
+  echo "Error: opencode server did not start within 10 seconds" >&2
+  WIN_IDX=$(window_index_by_name)
+  [ -n "$WIN_IDX" ] && tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
+  exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# GET WINDOW INDEX
+# ---------------------------------------------------------------------------
+WIN_IDX=$(window_index_by_name)
+if [ -z "$WIN_IDX" ]; then
+  echo "Error: window was not created properly" >&2
+  exit 1
+fi
+
+pin_window_name "$WIN_IDX"
+
+# Save state
+echo "{\"url\":\"$URL\",\"logfile\":\"$LOGFILE\",\"window_index\":$WIN_IDX}" > "$STATEFILE"
+
+# ---------------------------------------------------------------------------
+# SPLIT — pane 1: opencode attach (TUI)
+# ---------------------------------------------------------------------------
+tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$CURRENT_DIR" \
+  "opencode attach --continue '$URL'"
+sleep 0.5
+
+ensure_tui_zoomed "$WIN_IDX"
+
+# Only switch window if not already active
+ACTIVE_WIN=$(active_window_index)
+if [ "$ACTIVE_WIN" != "$WIN_IDX" ]; then
+  tmux select-window -t "${SESSION}:${WIN_IDX}"
+fi
+
+# ---------------------------------------------------------------------------
+# OUTPUT URL
+# ---------------------------------------------------------------------------
+echo "$URL"
