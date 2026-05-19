@@ -10,14 +10,15 @@ readonly STATEFILE="${CURRENT_DIR}/.opencode-server.json"
 
 usage() {
   cat <<EOF
-Usage: $SCRIPT_NAME [--new | --kill | -h]
+Usage: $SCRIPT_NAME [-l] [--new | --kill | -h]
 
 Manage opencode server + TUI in tmux for project directories.
 
 Without arguments, searches upward from \$PWD for .opencode-server.json
 and switches to that server's tmux window.
 
-  --new    Create a new server in \$PWD (skips parent lookup).
+  -l       Long output: prefix URL with the server directory.
+  --new    Create a new server in \$PWD (errors if one exists).
            Warns if a parent directory already has a server.
   --kill   Kill the server found upward from \$PWD.
            Removes its tmux window and state file.
@@ -31,11 +32,16 @@ EOF
 # --- Argument parsing ---
 KILL_MODE=0
 NEW_MODE=0
+LONG_MODE=0
 for arg in "$@"; do
   case "$arg" in
     --kill) KILL_MODE=1 ;;
     --new) NEW_MODE=1 ;;
+    -l) LONG_MODE=1 ;;
     -h|--help) usage ;;
+    *) echo "Error: unknown option '$arg'" >&2
+       echo "Run '$SCRIPT_NAME -h' for help." >&2
+       exit 1 ;;
   esac
 done
 
@@ -107,6 +113,17 @@ find_parent_statefile() {
   return 1
 }
 
+# --- Output URL, optionally prefixed with the server directory ---
+output_url() {
+  local url="$1"
+  local dir="$2"
+  if [ "$LONG_MODE" -eq 1 ]; then
+    echo "$dir $url"
+  else
+    echo "$url"
+  fi
+}
+
 # --- Switch to an existing server's tmux window using its state file ---
 switch_to_server() {
   local statefile="$1"
@@ -163,7 +180,7 @@ switch_to_server() {
 
   ensure_tui_zoomed "$WIN_IDX"
 
-  echo "$URL"
+  output_url "$URL" "$server_dir"
 }
 
 # ---------------------------------------------------------------------------
@@ -231,8 +248,14 @@ if [ "$NEW_MODE" -eq 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# NEW MODE (--new): check parent dirs for warnings, then create
+# NEW MODE (--new): check same dir + parent dirs, then create
 # ---------------------------------------------------------------------------
+
+if [ -f "$STATEFILE" ]; then
+  echo "Error: a server already exists in $CURRENT_DIR." >&2
+  echo "Run 'ocmux' without arguments to switch to it, or 'ocmux --kill' to stop it first." >&2
+  exit 1
+fi
 
 PARENT_SF=$(find_parent_statefile "$(dirname "$CURRENT_DIR")") || true
 if [ -n "$PARENT_SF" ]; then
@@ -302,4 +325,4 @@ fi
 # ---------------------------------------------------------------------------
 # OUTPUT URL
 # ---------------------------------------------------------------------------
-echo "$URL"
+output_url "$URL" "$CURRENT_DIR"
