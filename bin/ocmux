@@ -10,35 +10,53 @@ readonly STATEFILE="${CURRENT_DIR}/.opencode-server.json"
 
 usage() {
   cat <<EOF
-Usage: $SCRIPT_NAME [--kill]
+Usage: $SCRIPT_NAME [--new | --kill | -h]
 
-Manage opencode server + TUI in tmux for the current directory.
+Manage opencode server + TUI in tmux for project directories.
 
-  --kill   Stop the server and remove the tmux window
+Without arguments, searches upward from \$PWD for .opencode-server.json
+and switches to that server's tmux window.
+
+  --new    Create a new server in \$PWD (skips parent lookup).
+           Warns if a parent directory already has a server.
+  --kill   Kill the server found upward from \$PWD.
+           Removes its tmux window and state file.
   -h       Show this help
+
+Flags --new and --kill are mutually exclusive.
 EOF
   exit 0
 }
 
 # --- Argument parsing ---
 KILL_MODE=0
+NEW_MODE=0
 for arg in "$@"; do
   case "$arg" in
     --kill) KILL_MODE=1 ;;
+    --new) NEW_MODE=1 ;;
     -h|--help) usage ;;
   esac
 done
 
-# --- Helper: find window index by name ---
-window_index_by_name() {
+# --- Mutually exclusive flags ---
+if [ "$KILL_MODE" -eq 1 ] && [ "$NEW_MODE" -eq 1 ]; then
+  echo "Error: --new and --kill cannot be used together." >&2
+  exit 1
+fi
+
+# --- Helper: find window index by name for a given directory ---
+window_index_by_dir() {
+  local dir="$1"
   tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
-    awk -v name="$CURRENT_DIR" -F'\t' '$2 == name {print $1; exit}'
+    awk -v name="$dir" -F'\t' '$2 == name {print $1; exit}'
 }
 
-# --- Helper: read field from state file ---
-read_state() {
+# --- Helper: read field from a state file ---
+read_state_from() {
   local field="$1"
-  grep -om1 "\"${field}\":[^,}]*" "$STATEFILE" 2>/dev/null | sed "s/\"${field}\"://; s/\"//g" || true
+  local statefile="$2"
+  grep -om1 "\"${field}\":[^,}]*" "$statefile" 2>/dev/null | sed "s/\"${field}\"://; s/\"//g" || true
 }
 
 # --- Helper: find active window index in Opencode session ---
@@ -54,7 +72,7 @@ ensure_tui_zoomed() {
   zoomed=$(tmux list-windows -t "$SESSION" -F "#{window_index}|#{window_zoomed_flag}" 2>/dev/null | \
     awk -F'|' -v idx="$win_idx" '$1 == idx {print $2; exit}')
   if [ "$zoomed" = "1" ]; then
-    return  # already zoomed, don't toggle
+    return
   fi
   local pane
   pane=$(tui_pane_id "$win_idx")
@@ -67,24 +85,6 @@ pin_window_name() {
   tmux set-window-option -t "${SESSION}:${win_idx}" automatic-rename off 2>/dev/null || true
 }
 
-# --- Lookup: try state file's stored index first, fall back to name search ---
-resolve_window_index() {
-  local idx
-  # Try stored index from state file
-  idx=$(read_state "window_index")
-  if [ -n "$idx" ]; then
-    local stored_name
-    stored_name=$(tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
-      awk -F'\t' -v idx="$idx" '$1 == idx {print $2; exit}')
-    if [ "$stored_name" = "$CURRENT_DIR" ]; then
-      echo "$idx"
-      return
-    fi
-  fi
-  # Fall back to name search
-  window_index_by_name
-}
-
 # --- Helper: find pane ID running opencode attach ---
 tui_pane_id() {
   local win_idx="$1"
@@ -92,30 +92,158 @@ tui_pane_id() {
     awk -F'\t' '$2 == "node" {print $1; exit}'
 }
 
+# --- Search upward for .opencode-server.json from a given directory ---
+find_parent_statefile() {
+  local dir="${1:-$CURRENT_DIR}"
+  while true; do
+    if [ -f "${dir}/.opencode-server.json" ]; then
+      echo "${dir}/.opencode-server.json"
+      return 0
+    fi
+    [ "$dir" = "$HOME" ] && break
+    [ "$dir" = "/" ] && break
+    dir="$(dirname "$dir")"
+  done
+  return 1
+}
+
+# --- Switch to an existing server's tmux window using its state file ---
+switch_to_server() {
+  local statefile="$1"
+  local server_dir
+  server_dir="$(dirname "$statefile")"
+
+  local URL WIN_IDX
+  URL=$(read_state_from "url" "$statefile")
+  WIN_IDX=$(read_state_from "window_index" "$statefile")
+
+  if [ -z "$URL" ] || [ -z "$WIN_IDX" ]; then
+    echo "Error: invalid state file $statefile" >&2
+    exit 1
+  fi
+
+  local actual_name
+  actual_name=$(tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
+    awk -F'\t' -v idx="$WIN_IDX" '$1 == idx {print $2; exit}')
+
+  if [ "$actual_name" != "$server_dir" ]; then
+    WIN_IDX=$(window_index_by_dir "$server_dir")
+    if [ -z "$WIN_IDX" ]; then
+      echo "Error: tmux window for $server_dir not found" >&2
+      echo "Run 'ocmux --new' to create a new server in the current directory." >&2
+      exit 1
+    fi
+  fi
+
+  pin_window_name "$WIN_IDX"
+
+  local TUI_PANE
+  TUI_PANE=$(tui_pane_id "$WIN_IDX")
+  if [ -z "$TUI_PANE" ]; then
+    echo "TUI pane is dead, restarting..."
+    local pane_count
+    pane_count=$(tmux list-panes -t "${SESSION}:${WIN_IDX}" -F '#{pane_id}' 2>/dev/null | wc -l)
+    if [ "$pane_count" -ge 2 ]; then
+      local last_pane
+      last_pane=$(tmux list-panes -t "${SESSION}:${WIN_IDX}" -F '#{pane_id}' 2>/dev/null | tail -1)
+      tmux respawn-pane -k -t "$last_pane" "opencode attach --continue '$URL'" 2>/dev/null || \
+        tmux send-keys -t "$last_pane" "opencode attach --continue '$URL'" Enter
+    else
+      tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$server_dir" \
+        "opencode attach --continue '$URL'"
+    fi
+    sleep 1
+  fi
+
+  local active_win
+  active_win=$(active_window_index)
+  if [ "$active_win" != "$WIN_IDX" ]; then
+    tmux select-window -t "${SESSION}:${WIN_IDX}"
+  fi
+
+  ensure_tui_zoomed "$WIN_IDX"
+
+  echo "$URL"
+}
+
 # ---------------------------------------------------------------------------
 # KILL MODE
 # ---------------------------------------------------------------------------
 if [ "$KILL_MODE" -eq 1 ]; then
-  if ! tmux has-session -t "$SESSION" 2>/dev/null; then
-    echo "No tmux session '$SESSION' found."
-    rm -f "$STATEFILE"
+  PARENT_SF=$(find_parent_statefile)
+  if [ -z "$PARENT_SF" ]; then
+    echo "Error: no opencode server found in $CURRENT_DIR or any of its parents." >&2
+    echo "Run 'ocmux --new' to create a new server in the current directory." >&2
+    exit 1
+  fi
+
+  server_dir="$(dirname "$PARENT_SF")"
+  URL=$(read_state_from "url" "$PARENT_SF")
+  WIN_IDX=$(read_state_from "window_index" "$PARENT_SF")
+
+  if [ -z "$URL" ] || [ -z "$WIN_IDX" ]; then
+    echo "Error: invalid state file $PARENT_SF" >&2
+    exit 1
+  fi
+
+  echo "Stopping server and removing window for $server_dir..."
+
+  # Validate window still exists
+  if tmux has-session -t "$SESSION" 2>/dev/null; then
+    actual_name=$(tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
+      awk -F'\t' -v idx="$WIN_IDX" '$1 == idx {print $2; exit}')
+    if [ "$actual_name" != "$server_dir" ]; then
+      WIN_IDX=$(window_index_by_dir "$server_dir")
+    fi
+
+    if [ -n "$WIN_IDX" ]; then
+      tmux select-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
+      tmux send-keys -t "${SESSION}:${WIN_IDX}.0" C-c 2>/dev/null || true
+      sleep 0.3
+      tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
+      echo "Window removed."
+    else
+      echo "Tmux window not found for $server_dir (cleaning up state file)."
+    fi
+  else
+    echo "No tmux session '$SESSION' found (cleaning up state file)."
+  fi
+
+  rm -f "$PARENT_SF"
+  echo "Done."
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# DEFAULT MODE (no arguments): search upward for existing server
+# ---------------------------------------------------------------------------
+if [ "$NEW_MODE" -eq 0 ]; then
+  PARENT_SF=$(find_parent_statefile)
+  if [ -n "$PARENT_SF" ]; then
+    tmux new-session -d -s "$SESSION" 2>/dev/null || true
+    switch_to_server "$PARENT_SF"
     exit 0
   fi
 
-  WIN_IDX=$(window_index_by_name)
-  if [ -n "$WIN_IDX" ]; then
-    echo "Stopping server and removing window for $CURRENT_DIR..."
-    tmux send-keys -t "${SESSION}:${WIN_IDX}.0" C-c 2>/dev/null || true
-    sleep 0.3
-    tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
-    echo "Window removed."
-  else
-    echo "No tmux window found for $CURRENT_DIR."
-  fi
+  echo "Error: no opencode server found in $CURRENT_DIR or any of its parents." >&2
+  echo "Run 'ocmux --new' to create a new server in the current directory." >&2
+  exit 1
+fi
 
-  rm -f "$STATEFILE"
-  echo "Done."
-  exit 0
+# ---------------------------------------------------------------------------
+# NEW MODE (--new): check parent dirs for warnings, then create
+# ---------------------------------------------------------------------------
+
+PARENT_SF=$(find_parent_statefile "$(dirname "$CURRENT_DIR")")
+if [ -n "$PARENT_SF" ]; then
+  parent_dir="$(dirname "$PARENT_SF")"
+  echo "Warning: there is already an opencode server in $parent_dir."
+  echo "Running 'ocmux' without arguments would switch to that server."
+  read -r -p "Are you sure you want to create a new server here? [y/N] " response
+  case "$response" in
+    [yY]|[yY][eE][sS]) ;;
+    *) echo "Cancelled."; exit 0 ;;
+  esac
 fi
 
 # ---------------------------------------------------------------------------
@@ -124,60 +252,12 @@ fi
 tmux new-session -d -s "$SESSION" 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# WINDOW ALREADY EXISTS — just reattach / switch
-# ---------------------------------------------------------------------------
-WIN_IDX=$(resolve_window_index)
-if [ -n "$WIN_IDX" ]; then
-  if [ ! -f "$STATEFILE" ]; then
-    echo "Error: window exists but $STATEFILE is missing." >&2
-    echo "Run '$SCRIPT_NAME --kill' to clean up, then try again." >&2
-    exit 1
-  fi
-
-  URL=$(read_state "url")
-  if [ -z "$URL" ]; then
-    echo "Error: could not read URL from $STATEFILE" >&2
-    exit 1
-  fi
-
-  pin_window_name "$WIN_IDX"
-
-  # Check if TUI is alive
-  TUI_PANE=$(tui_pane_id "$WIN_IDX")
-  if [ -z "$TUI_PANE" ]; then
-    echo "TUI pane is dead, restarting..."
-    PANE_COUNT=$(tmux list-panes -t "${SESSION}:${WIN_IDX}" -F '#{pane_id}' 2>/dev/null | wc -l)
-    if [ "$PANE_COUNT" -ge 2 ]; then
-      LAST_PANE=$(tmux list-panes -t "${SESSION}:${WIN_IDX}" -F '#{pane_id}' 2>/dev/null | tail -1)
-      tmux respawn-pane -k -t "$LAST_PANE" "opencode attach --continue '$URL'" 2>/dev/null || \
-        tmux send-keys -t "$LAST_PANE" "opencode attach --continue '$URL'" Enter
-    else
-      tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$CURRENT_DIR" \
-        "opencode attach --continue '$URL'"
-    fi
-    sleep 1
-  fi
-
-  # Only switch window if not already active in the Opencode session
-  ACTIVE_WIN=$(active_window_index)
-  if [ "$ACTIVE_WIN" != "$WIN_IDX" ]; then
-    tmux select-window -t "${SESSION}:${WIN_IDX}"
-  fi
-
-  ensure_tui_zoomed "$WIN_IDX"
-
-  echo "$URL"
-  exit 0
-fi
-
-# ---------------------------------------------------------------------------
 # CREATE NEW WINDOW — pane 0: opencode serve
 # ---------------------------------------------------------------------------
 echo "Starting opencode server for $CURRENT_DIR..."
 tmux new-window -d -t "$SESSION" -n "$CURRENT_DIR" -c "$CURRENT_DIR" \
   "opencode serve --port 0 2>&1 | tee '$LOGFILE'"
 
-# Poll logfile for the URL
 URL=""
 for i in $(seq 1 50); do
   sleep 0.2
@@ -187,7 +267,7 @@ done
 
 if [ -z "$URL" ]; then
   echo "Error: opencode server did not start within 10 seconds" >&2
-  WIN_IDX=$(window_index_by_name)
+  WIN_IDX=$(window_index_by_dir "$CURRENT_DIR")
   [ -n "$WIN_IDX" ] && tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
   exit 1
 fi
@@ -195,7 +275,7 @@ fi
 # ---------------------------------------------------------------------------
 # GET WINDOW INDEX
 # ---------------------------------------------------------------------------
-WIN_IDX=$(window_index_by_name)
+WIN_IDX=$(window_index_by_dir "$CURRENT_DIR")
 if [ -z "$WIN_IDX" ]; then
   echo "Error: window was not created properly" >&2
   exit 1
@@ -203,7 +283,6 @@ fi
 
 pin_window_name "$WIN_IDX"
 
-# Save state
 echo "{\"url\":\"$URL\",\"logfile\":\"$LOGFILE\",\"window_index\":$WIN_IDX}" > "$STATEFILE"
 
 # ---------------------------------------------------------------------------
@@ -215,7 +294,6 @@ sleep 0.5
 
 ensure_tui_zoomed "$WIN_IDX"
 
-# Only switch window if not already active
 ACTIVE_WIN=$(active_window_index)
 if [ "$ACTIVE_WIN" != "$WIN_IDX" ]; then
   tmux select-window -t "${SESSION}:${WIN_IDX}"
