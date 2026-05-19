@@ -6,7 +6,7 @@ readonly SESSION="Opencode"
 readonly CURRENT_DIR="$(pwd)"
 readonly HASH="$(echo "$CURRENT_DIR" | md5sum | cut -c1-12)"
 readonly LOGFILE="/tmp/opencode-serve-${HASH}.log"
-readonly STATEFILE="${CURRENT_DIR}/.opencode-server.json"
+readonly STATEFILE="${CURRENT_DIR}/.ocmux.json"
 
 usage() {
   cat <<EOF
@@ -15,7 +15,7 @@ Usage: $SCRIPT_NAME [-l] [<subcommand>] [<directory>]
 Manage opencode server + TUI in tmux for project directories.
 
 Without arguments, searches upward from <directory> (default: \$PWD)
-for .opencode-server.json and switches to that server's tmux window.
+for .ocmux.json and switches to that server's tmux window.
 
 Subcommands:
   new     Create a new server in <directory> (default: \$PWD).
@@ -124,8 +124,8 @@ tui_pane_id() {
 find_parent_statefile() {
   local dir="${1:-$TARGET_DIR}"
   while true; do
-    if [ -f "${dir}/.opencode-server.json" ]; then
-      echo "${dir}/.opencode-server.json"
+    if [ -f "${dir}/.ocmux.json" ]; then
+      echo "${dir}/.ocmux.json"
       return 0
     fi
     [ "$dir" = "$HOME" ] && break
@@ -214,7 +214,7 @@ list_servers() {
   local data=""
   local count=0
   while IFS=$'\t' read -r idx dir; do
-    local sf="${dir}/.opencode-server.json"
+    local sf="${dir}/.ocmux.json"
     [ ! -f "$sf" ] && continue
     local url
     url=$(read_state_from "url" "$sf")
@@ -301,7 +301,7 @@ fi
 # SUBCOMMAND: new
 # ---------------------------------------------------------------------------
 if [ "$SUBCOMMAND" = "new" ]; then
-  if [ -f "${TARGET_DIR}/.opencode-server.json" ]; then
+  if [ -f "${TARGET_DIR}/.ocmux.json" ]; then
     echo "Error: a server already exists in $TARGET_DIR." >&2
     echo "Run 'ocmux' without arguments to switch to it, or 'ocmux kill' to stop it first." >&2
     exit 1
@@ -347,7 +347,7 @@ if [ "$SUBCOMMAND" = "new" ]; then
 
   pin_window_name "$WIN_IDX"
 
-  echo "{\"url\":\"$URL\",\"logfile\":\"$LOGFILE\",\"window_index\":$WIN_IDX}" > "${TARGET_DIR}/.opencode-server.json"
+  echo "{\"url\":\"$URL\",\"logfile\":\"$LOGFILE\",\"window_index\":$WIN_IDX}" > "${TARGET_DIR}/.ocmux.json"
 
   tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$TARGET_DIR" \
     "opencode attach --continue '$URL'"
