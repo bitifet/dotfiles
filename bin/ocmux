@@ -10,68 +10,93 @@ readonly STATEFILE="${CURRENT_DIR}/.opencode-server.json"
 
 usage() {
   cat <<EOF
-Usage: $SCRIPT_NAME [-l] [--new | --kill | -h]
+Usage: $SCRIPT_NAME [-l] [<subcommand>] [<directory>]
 
 Manage opencode server + TUI in tmux for project directories.
 
-Without arguments, searches upward from \$PWD for .opencode-server.json
-and switches to that server's tmux window.
+Without arguments, searches upward from <directory> (default: \$PWD)
+for .opencode-server.json and switches to that server's tmux window.
 
-  -l       Long output: prefix URL with the server directory.
-  --new    Create a new server in \$PWD (errors if one exists).
-           Warns if a parent directory already has a server.
-  --kill   Kill the server found upward from \$PWD.
-           Removes its tmux window and state file.
+Subcommands:
+  new     Create a new server in <directory> (default: \$PWD).
+          Errors if one already exists there.
+          Warns if a parent directory already has a server.
+  kill    Kill the server found upward from <directory>.
+          Removes its tmux window and state file.
+  list    List all running servers with their directories and URLs.
+
+Options:
+  -l       Long output: append " → <dir>" after the URL.
   -h       Show this help
-
-Flags --new and --kill are mutually exclusive.
 EOF
   exit 0
 }
 
 # --- Argument parsing ---
-KILL_MODE=0
-NEW_MODE=0
+SUBCOMMAND=""
+TARGET_DIR=""
 LONG_MODE=0
+POS_ARGS=()
+
 for arg in "$@"; do
   case "$arg" in
-    --kill) KILL_MODE=1 ;;
-    --new) NEW_MODE=1 ;;
     -l) LONG_MODE=1 ;;
     -h|--help) usage ;;
-    *) echo "Error: unknown option '$arg'" >&2
-       echo "Run '$SCRIPT_NAME -h' for help." >&2
-       exit 1 ;;
+    --new|--kill)
+      echo "Error: '$arg' is no longer a flag. Use 'ocmux ${arg#--}' instead." >&2
+      exit 1 ;;
+    -*) echo "Error: unknown option '$arg'" >&2
+        echo "Run '$SCRIPT_NAME -h' for help." >&2
+        exit 1 ;;
+    *) POS_ARGS+=("$arg") ;;
   esac
 done
 
-# --- Mutually exclusive flags ---
-if [ "$KILL_MODE" -eq 1 ] && [ "$NEW_MODE" -eq 1 ]; then
-  echo "Error: --new and --kill cannot be used together." >&2
-  exit 1
+for arg in "${POS_ARGS[@]}"; do
+  case "$arg" in
+    new|kill|list)
+      if [ -n "$SUBCOMMAND" ]; then
+        echo "Error: multiple subcommands specified: '$SUBCOMMAND' and '$arg'" >&2
+        exit 1
+      fi
+      SUBCOMMAND="$arg" ;;
+    *)
+      if [ -n "$TARGET_DIR" ]; then
+        echo "Error: unexpected argument '$arg'" >&2
+        exit 1
+      fi
+      TARGET_DIR="$arg" ;;
+  esac
+done
+
+if [ -n "$TARGET_DIR" ]; then
+  TARGET_DIR="$(cd "$TARGET_DIR" 2>/dev/null && pwd)" || {
+    echo "Error: invalid directory '$TARGET_DIR'" >&2
+    exit 1
+  }
+else
+  TARGET_DIR="$CURRENT_DIR"
 fi
 
-# --- Helper: find window index by name for a given directory ---
+# --- Helpers ---
+
 window_index_by_dir() {
   local dir="$1"
   tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
     awk -v name="$dir" -F'\t' '$2 == name {print $1; exit}'
 }
 
-# --- Helper: read field from a state file ---
 read_state_from() {
   local field="$1"
   local statefile="$2"
   grep -om1 "\"${field}\":[^,}]*" "$statefile" 2>/dev/null | sed "s/\"${field}\"://; s/\"//g" || true
 }
 
-# --- Helper: find active window index in Opencode session ---
 active_window_index() {
   tmux list-windows -t "$SESSION" -F '#{window_index} #{window_active}' 2>/dev/null | \
     awk '$2 == "1" {print $1; exit}'
 }
 
-# --- Helper: zoom TUI pane only if not already zoomed ---
 ensure_tui_zoomed() {
   local win_idx="$1"
   local zoomed
@@ -85,22 +110,19 @@ ensure_tui_zoomed() {
   [ -n "$pane" ] && tmux resize-pane -Z -t "$pane" 2>/dev/null || true
 }
 
-# --- Helper: disable automatic-rename for a window ---
 pin_window_name() {
   local win_idx="$1"
   tmux set-window-option -t "${SESSION}:${win_idx}" automatic-rename off 2>/dev/null || true
 }
 
-# --- Helper: find pane ID running opencode attach ---
 tui_pane_id() {
   local win_idx="$1"
   tmux list-panes -t "${SESSION}:${win_idx}" -F $'#{pane_id}\t#{pane_current_command}' 2>/dev/null | \
     awk -F'\t' '$2 == "node" {print $1; exit}'
 }
 
-# --- Search upward for .opencode-server.json from a given directory ---
 find_parent_statefile() {
-  local dir="${1:-$CURRENT_DIR}"
+  local dir="${1:-$TARGET_DIR}"
   while true; do
     if [ -f "${dir}/.opencode-server.json" ]; then
       echo "${dir}/.opencode-server.json"
@@ -113,12 +135,11 @@ find_parent_statefile() {
   return 1
 }
 
-# --- Output URL, optionally prefixed with the server directory ---
 output_url() {
   local url="$1"
   local dir="$2"
   if [ "$LONG_MODE" -eq 1 ]; then
-    echo "$dir $url"
+    echo "$url → $dir"
   else
     echo "$url"
   fi
@@ -147,7 +168,7 @@ switch_to_server() {
     WIN_IDX=$(window_index_by_dir "$server_dir")
     if [ -z "$WIN_IDX" ]; then
       echo "Error: tmux window for $server_dir not found" >&2
-      echo "Run 'ocmux --new' to create a new server in the current directory." >&2
+      echo "Run 'ocmux new' to create a new server." >&2
       exit 1
     fi
   fi
@@ -183,14 +204,60 @@ switch_to_server() {
   output_url "$URL" "$server_dir"
 }
 
+# --- List all running servers ---
+list_servers() {
+  if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+    echo "No opencode servers running."
+    exit 0
+  fi
+
+  local data=""
+  local count=0
+  while IFS=$'\t' read -r idx dir; do
+    local sf="${dir}/.opencode-server.json"
+    [ ! -f "$sf" ] && continue
+    local url
+    url=$(read_state_from "url" "$sf")
+    [ -z "$url" ] && continue
+    local tui
+    tui=$(tui_pane_id "$idx")
+    if [ -n "$tui" ]; then
+      data+="${url}\t${dir}\talive\n"
+    else
+      data+="${url}\t${dir}\tdead\n"
+    fi
+    ((++count))
+  done < <(tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null)
+
+  if [ "$count" -eq 0 ]; then
+    echo "No opencode servers running."
+    exit 0
+  fi
+
+  printf "URL\tDirectory\tStatus\n"
+  printf "%b" "$data" | column -t -s $'\t'
+}
+
 # ---------------------------------------------------------------------------
-# KILL MODE
+# SUBCOMMAND: list
 # ---------------------------------------------------------------------------
-if [ "$KILL_MODE" -eq 1 ]; then
+if [ "$SUBCOMMAND" = "list" ]; then
+  if [ -n "$TARGET_DIR" ] && [ "$TARGET_DIR" != "$CURRENT_DIR" ]; then
+    echo "Error: 'list' does not accept a directory path." >&2
+    exit 1
+  fi
+  list_servers
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# SUBCOMMAND: kill
+# ---------------------------------------------------------------------------
+if [ "$SUBCOMMAND" = "kill" ]; then
   PARENT_SF=$(find_parent_statefile) || true
   if [ -z "$PARENT_SF" ]; then
-    echo "Error: no opencode server found in $CURRENT_DIR or any of its parents." >&2
-    echo "Run 'ocmux --new' to create a new server in the current directory." >&2
+    echo "Error: no opencode server found in $TARGET_DIR or any of its parents." >&2
+    echo "Run 'ocmux new' to create a new server." >&2
     exit 1
   fi
 
@@ -205,7 +272,6 @@ if [ "$KILL_MODE" -eq 1 ]; then
 
   echo "Stopping server and removing window for $server_dir..."
 
-  # Validate window still exists
   if tmux has-session -t "$SESSION" 2>/dev/null; then
     actual_name=$(tmux list-windows -t "$SESSION" -F $'#{window_index}\t#{window_name}' 2>/dev/null | \
       awk -F'\t' -v idx="$WIN_IDX" '$1 == idx {print $2; exit}')
@@ -232,97 +298,83 @@ if [ "$KILL_MODE" -eq 1 ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# DEFAULT MODE (no arguments): search upward for existing server
+# SUBCOMMAND: new
 # ---------------------------------------------------------------------------
-if [ "$NEW_MODE" -eq 0 ]; then
-  PARENT_SF=$(find_parent_statefile) || true
-  if [ -n "$PARENT_SF" ]; then
-    tmux new-session -d -s "$SESSION" 2>/dev/null || true
-    switch_to_server "$PARENT_SF"
-    exit 0
+if [ "$SUBCOMMAND" = "new" ]; then
+  if [ -f "${TARGET_DIR}/.opencode-server.json" ]; then
+    echo "Error: a server already exists in $TARGET_DIR." >&2
+    echo "Run 'ocmux' without arguments to switch to it, or 'ocmux kill' to stop it first." >&2
+    exit 1
   fi
 
-  echo "Error: no opencode server found in $CURRENT_DIR or any of its parents." >&2
-  echo "Run 'ocmux --new' to create a new server in the current directory." >&2
-  exit 1
+  PARENT_SF=$(find_parent_statefile "$(dirname "$TARGET_DIR")") || true
+  if [ -n "$PARENT_SF" ]; then
+    parent_dir="$(dirname "$PARENT_SF")"
+    echo "Warning: there is already an opencode server in $parent_dir."
+    echo "Running 'ocmux' without arguments would switch to that server."
+    read -r -p "Are you sure you want to create a new server here? [y/N] " response
+    case "$response" in
+      [yY]|[yY][eE][sS]) ;;
+      *) echo "Cancelled."; exit 0 ;;
+    esac
+  fi
+
+  tmux new-session -d -s "$SESSION" 2>/dev/null || true
+
+  echo "Starting opencode server for $TARGET_DIR..."
+  tmux new-window -d -t "$SESSION" -n "$TARGET_DIR" -c "$TARGET_DIR" \
+    "opencode serve --port 0 2>&1 | tee '$LOGFILE'"
+
+  URL=""
+  for i in $(seq 1 50); do
+    sleep 0.2
+    URL=$(grep -om1 'opencode server listening on http://[^ ]*' "$LOGFILE" 2>/dev/null | sed 's/opencode server listening on //' || true)
+    [ -n "$URL" ] && break
+  done
+
+  if [ -z "$URL" ]; then
+    echo "Error: opencode server did not start within 10 seconds" >&2
+    WIN_IDX=$(window_index_by_dir "$TARGET_DIR")
+    [ -n "$WIN_IDX" ] && tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
+    exit 1
+  fi
+
+  WIN_IDX=$(window_index_by_dir "$TARGET_DIR")
+  if [ -z "$WIN_IDX" ]; then
+    echo "Error: window was not created properly" >&2
+    exit 1
+  fi
+
+  pin_window_name "$WIN_IDX"
+
+  echo "{\"url\":\"$URL\",\"logfile\":\"$LOGFILE\",\"window_index\":$WIN_IDX}" > "${TARGET_DIR}/.opencode-server.json"
+
+  tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$TARGET_DIR" \
+    "opencode attach --continue '$URL'"
+  sleep 0.5
+
+  ensure_tui_zoomed "$WIN_IDX"
+
+  ACTIVE_WIN=$(active_window_index)
+  if [ "$ACTIVE_WIN" != "$WIN_IDX" ]; then
+    tmux select-window -t "${SESSION}:${WIN_IDX}"
+  fi
+
+  output_url "$URL" "$TARGET_DIR"
+  exit 0
 fi
 
 # ---------------------------------------------------------------------------
-# NEW MODE (--new): check same dir + parent dirs, then create
+# DEFAULT MODE (no subcommand): search upward for existing server
 # ---------------------------------------------------------------------------
 
-if [ -f "$STATEFILE" ]; then
-  echo "Error: a server already exists in $CURRENT_DIR." >&2
-  echo "Run 'ocmux' without arguments to switch to it, or 'ocmux --kill' to stop it first." >&2
-  exit 1
-fi
-
-PARENT_SF=$(find_parent_statefile "$(dirname "$CURRENT_DIR")") || true
+PARENT_SF=$(find_parent_statefile) || true
 if [ -n "$PARENT_SF" ]; then
-  parent_dir="$(dirname "$PARENT_SF")"
-  echo "Warning: there is already an opencode server in $parent_dir."
-  echo "Running 'ocmux' without arguments would switch to that server."
-  read -r -p "Are you sure you want to create a new server here? [y/N] " response
-  case "$response" in
-    [yY]|[yY][eE][sS]) ;;
-    *) echo "Cancelled."; exit 0 ;;
-  esac
+  tmux new-session -d -s "$SESSION" 2>/dev/null || true
+  switch_to_server "$PARENT_SF"
+  exit 0
 fi
 
-# ---------------------------------------------------------------------------
-# ENSURE TMUX SESSION EXISTS
-# ---------------------------------------------------------------------------
-tmux new-session -d -s "$SESSION" 2>/dev/null || true
-
-# ---------------------------------------------------------------------------
-# CREATE NEW WINDOW — pane 0: opencode serve
-# ---------------------------------------------------------------------------
-echo "Starting opencode server for $CURRENT_DIR..."
-tmux new-window -d -t "$SESSION" -n "$CURRENT_DIR" -c "$CURRENT_DIR" \
-  "opencode serve --port 0 2>&1 | tee '$LOGFILE'"
-
-URL=""
-for i in $(seq 1 50); do
-  sleep 0.2
-  URL=$(grep -om1 'opencode server listening on http://[^ ]*' "$LOGFILE" 2>/dev/null | sed 's/opencode server listening on //' || true)
-  [ -n "$URL" ] && break
-done
-
-if [ -z "$URL" ]; then
-  echo "Error: opencode server did not start within 10 seconds" >&2
-  WIN_IDX=$(window_index_by_dir "$CURRENT_DIR")
-  [ -n "$WIN_IDX" ] && tmux kill-window -t "${SESSION}:${WIN_IDX}" 2>/dev/null || true
-  exit 1
-fi
-
-# ---------------------------------------------------------------------------
-# GET WINDOW INDEX
-# ---------------------------------------------------------------------------
-WIN_IDX=$(window_index_by_dir "$CURRENT_DIR")
-if [ -z "$WIN_IDX" ]; then
-  echo "Error: window was not created properly" >&2
-  exit 1
-fi
-
-pin_window_name "$WIN_IDX"
-
-echo "{\"url\":\"$URL\",\"logfile\":\"$LOGFILE\",\"window_index\":$WIN_IDX}" > "$STATEFILE"
-
-# ---------------------------------------------------------------------------
-# SPLIT — pane 1: opencode attach (TUI)
-# ---------------------------------------------------------------------------
-tmux split-window -v -t "${SESSION}:${WIN_IDX}" -c "$CURRENT_DIR" \
-  "opencode attach --continue '$URL'"
-sleep 0.5
-
-ensure_tui_zoomed "$WIN_IDX"
-
-ACTIVE_WIN=$(active_window_index)
-if [ "$ACTIVE_WIN" != "$WIN_IDX" ]; then
-  tmux select-window -t "${SESSION}:${WIN_IDX}"
-fi
-
-# ---------------------------------------------------------------------------
-# OUTPUT URL
-# ---------------------------------------------------------------------------
-output_url "$URL" "$CURRENT_DIR"
+echo "Error: no opencode server found in $TARGET_DIR or any of its parents." >&2
+echo "Run 'ocmux new' to create a new server." >&2
+exit 1
