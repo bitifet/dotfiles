@@ -43,6 +43,7 @@ so ~/.vim/vimrc_files/oldStuff.vim
 so ~/.vim/vimrc_files/emoji.vim
 
 so ~/.vim/vimrc_files/hilight.vim
+so ~/.vim/vimrc_files/ai.vim
 
 " Update help files tags:
 :helptags ~/.vim/doc

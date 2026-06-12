@@ -97,3 +97,4 @@ vim.cmd("so ~/.vim/vimrc_files/netrw.vim")
 vim.cmd("so ~/.vim/vimrc_files/emoji.vim")
 
 -- vim.cmd("so ~/.vim/vimrc_files/hilight.vim")
+vim.cmd("so ~/.vim/vimrc_files/ai.vim")
