@@ -3,7 +3,7 @@
 echo "================================================================"
 echo "                      - Software Setup -"
 echo "================================================================"
-sudo apt-get install vim dialog screen tmux git subversion git-svn ssh curl g++ make xclip
+sudo apt-get install wmctlr vim dialog screen tmux git ssh curl g++ make 
 
 
 echo "================================================================"
