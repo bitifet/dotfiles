@@ -1,28 +1,43 @@
-Home config files and scripts
-=============================
+# DotFiles
 
-My personal vim configuration
------------------------------
+Personal configuration files and scripts, managed with **GNU stow**.
 
-  * .vimrc
-  * .vim/vimrc_files
+## Quick start
 
+```bash
+git clone https://github.com/bitifet/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+./install.sh
+```
 
-Useful scripts and tools (~/bin)
---------------------------------
+The installer is interactive by default — select what to install per machine.
 
-  * scl: (Not really) first version of scl (SCreen List) screen session management script.
-  * vimrecover: Shorthand for recursively recover related files of all vim swapfiles in a tree.
+```bash
+./install.sh --all      # Install everything non-interactively
+./install.sh --stow     # Only create symlinks, skip software
+```
 
+## What's included
 
-Setup instructions:
--------------------
+| Package        | Contents                                    |
+|----------------|---------------------------------------------|
+| `bash`         | Shell init, aliases, git helpers, prompt    |
+| `nvim`         | Neovim config (lazy.nvim, telescope, LSP)   |
+| `vim`          | Lightweight Vim fallback (shares config)    |
+| `tmux`         | Tmux config (prefix=Tab, tpm, resurrect)    |
+| `tools`        | Utility scripts (ocmux, supergrep, f, ...)  |
+| `less`         | less pager keybindings                      |
+| `zellij`       | Zellij multiplexer config                   |
+| `git`           | (empty — add per-machine .gitconfig)         |
 
-> (For read-only access)
+## Structure
 
-    cd
-    git init
-    git remote add -t master -m master origin https://github.com/bitifet/dotfiles.git
-    git pull
-    ./.etc/_setup.sh
- 
+```
+~/.dotfiles/
+├── stow/          One dir per tool, mirrors $HOME for GNU stow
+├── packages/      Install scripts per software category  
+├── lib/           Shared shell helpers
+├── install.sh     Main setup orchestrator
+├── AGENTS.md      Instructions for AI agents working on this repo
+└── README.md
+```

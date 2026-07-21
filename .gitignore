@@ -1,14 +1,5 @@
-# *
-# !.config/nvim/**
-# !.vimrc
-# !.vim/**
-# **.sw[po]
-# #!bin
-# #!bin/*
-# #**.bak
-# #**.bak*
-# .vim/clipboard.txt
-# .vim/.netrwhist
-# .vim/screenrc
-
-
+.ocmux.json
+*.sw[po]
+*~
+*.bak
+.DS_Store
