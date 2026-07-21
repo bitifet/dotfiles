@@ -32,6 +32,25 @@ Configs live under `stow/<pkg>/` and get symlinked into `$HOME` via `stow -t ~ <
     ./install.sh          # interactive: select what to install
     ./install.sh --all    # install everything non-interactively
     ./install.sh --stow   # only create symlinks
+    ./install.sh --cleanup  # revert stow symlinks and config changes
+    ./cleanup.sh          # revert stow + APT packages (interactive)
+
+### Package scripts (interactive checkboxes via whiptail/dialog)
+
+| Script                  | Contents                                      |
+|-------------------------|-----------------------------------------------|
+| `05-tailscale.sh`       | Mesh VPN                                      |
+| `10-essentials.sh`      | git, curl, stow, build-essential, ssh         |
+| `20-shell.sh`           | tmux, fzf, zellij, xclip, tmate, tpm          |
+| `25-ssh.sh`             | openssh-server, mosh (asks enable/disable)    |
+| `30-editors.sh`         | neovim (latest PPA), vim, ripgrep, fd-find    |
+| `35-brave.sh`           | Brave browser                                 |
+| `40-node.sh`            | nvm + Node.js LTS                             |
+| `45-npm-globals.sh`     | agentp, carlino (npm i -g)                    |
+| `50-libreoffice.sh`     | LibreOffice (latest PPA)                      |
+| `60-touchpad.sh`        | Tap-to-click via libinput (auto-detects)      |
+| `70-capslock.sh`        | CapsLock→Escape (auto-detect DE)              |
+| `99-extras.sh`          | imagemagick, poppler, powerline fonts         |
 
 ## ocmux
 
@@ -60,6 +79,7 @@ Each server runs `opencode serve --port 0` in a tmux window named after the proj
 - Both share vimrc_files/ from `stow/vim/.vim/vimrc_files/`.
 - Neovim sources these files directly: csv, mappings, formatting, netrw, emoji, ai.
 - `ai.vim` provides `<Leader><CR>` to run AgentP on visual selection using ocmux URL.
+- OSC 52 clipboard works natively in tmux + nvim. Vim uses `vim-oscyank` plugin.
 
 ## Shell config
 
@@ -75,6 +95,11 @@ Each server runs `opencode serve --port 0` in a tmux window named after the proj
   nv (nvim-remote), sweat, drafts, svn.vim, 112.vim, oldStuff.vim, run.vim,
   unused/ directory, capslock, shift, old _setup.sh.
 - Tmux plugins (tpm, resurrect) are no longer tracked — installed at setup time.
-- TERM changed from `screen-256color` to `screen.xterm-256color`.
+- TERM changed from `screen-256color` to `tmux-256color`.
 - Fixed hardcoded `/home/joanmi/` paths to use `$HOME` or relative paths.
 - Migrated from `~/bin/` to `~/.local/bin/` (freedesktop standard).
+- Neovim installed via `ppa:neovim-ppa/unstable` for latest version.
+- Cleanup script (`cleanup.sh`) reverts stow, APT packages, and bashrc changes.
+- `.install-log` tracks installed APT packages for cleanup (gitignored).
+- CapsLock→Escape auto-detects GNOME, XFCE, or generic X11 and applies accordingly.
+- Touchpad tap-to-click via libinput Xorg config.
