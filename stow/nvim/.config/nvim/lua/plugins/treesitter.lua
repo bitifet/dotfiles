@@ -4,7 +4,7 @@ return {
         build = ":TSUpdate",
         event = { "BufReadPost", "BufNewFile" },
         config = function()
-            require("nvim-treesitter.configs").setup({
+            require("nvim-treesitter").setup({
                 ensure_installed = {
                     "lua", "javascript", "python", "bash", "sql",
                     "go", "ruby", "java", "php", "json", "yaml",
