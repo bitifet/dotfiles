@@ -5,7 +5,7 @@ CATEGORY="shell"
 DESCRIPTION="Shell & terminal tools (tmux, fzf, zellij, xclip)"
 
 install() {
-    apt_install tmux fzf xclip tmate screen
+    apt_install tmux fzf xclip screen
 
     # Install tpm (Tmux Plugin Manager) if not present
     if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then

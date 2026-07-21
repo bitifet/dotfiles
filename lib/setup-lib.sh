@@ -93,6 +93,16 @@ stow_package() {
         err "Stow package '$pkg' not found in $STOW_DIR"
         return 1
     fi
+
+    # Pre-check: find and backup any files that would conflict with stow
+    while IFS= read -r file; do
+        local target="$HOME/${file#$STOW_DIR/$pkg/}"
+        if [ -e "$target" ] && [ ! -L "$target" ]; then
+            warn "$target already exists, backing up to ${target}.bak"
+            mv "$target" "${target}.bak"
+        fi
+    done < <(find "$STOW_DIR/$pkg" -type f -not -path '*/.git/*')
+
     step "Stowing $pkg..."
     stow -v -t "$HOME" -d "$STOW_DIR" "$pkg"
     echo "[STOW] $pkg" >> "$INSTALL_LOG"

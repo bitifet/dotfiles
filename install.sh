@@ -60,15 +60,16 @@ if [ ${#AVAILABLE[@]} -eq 0 ]; then
     exit 1
 fi
 
-# ---- Phase 1: Symlinks ----
-if ! $STOW_ONLY; then
-    step "Checking dependencies..."
-    if ! command -v stow &>/dev/null; then
-        err "GNU stow is required. Install with: sudo apt install stow"
+# ---- Phase 0: Bootstrap stow ----
+step "Checking dependencies..."
+if ! command -v stow &>/dev/null; then
+    info "GNU stow not found. Installing..."
+    sudo apt-get update -qq && sudo apt-get install -y stow || {
+        err "Failed to install stow. Install it manually: sudo apt install stow"
         exit 1
-    fi
-    ok "stow found"
+    }
 fi
+ok "stow available"
 
 step "Creating symlinks..."
 
