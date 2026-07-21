@@ -103,8 +103,29 @@ elif [ ${#ARG_CATEGORIES[@]} -gt 0 ]; then
 else
     step "Select software categories to install"
     echo ""
-    SELECTED_STR=$(select_categories "Software Setup" "${AVAILABLE[@]}")
-    # Parse whiptail/dialog output (quoted strings) or text input
+
+    # Read install log to find already-done categories
+    local done_categories=()
+    if [ -f "$INSTALL_LOG" ]; then
+        while IFS= read -r line; do
+            [[ "$line" =~ ^\[DONE\]\ (.+) ]] && done_categories+=("${BASH_REMATCH[1]}")
+        done < "$INSTALL_LOG"
+    fi
+
+    # Build alternating list: name ON|OFF based on whether already done
+    local select_args=()
+    for cat in "${AVAILABLE[@]}"; do
+        local state="ON"
+        for done_cat in "${done_categories[@]}"; do
+            if [ "$done_cat" = "$cat" ]; then
+                state="OFF"
+                break
+            fi
+        done
+        select_args+=("$cat" "$state")
+    done
+
+    SELECTED_STR=$(select_categories "Software Setup" "${select_args[@]}")
     SELECTED_STR="${SELECTED_STR//\"/}"
     IFS=' ' read -ra SELECTED <<< "$SELECTED_STR"
 fi
@@ -147,6 +168,7 @@ for category in "${SELECTED[@]}"; do
 
     install
     post_install
+    echo "[DONE] $category" >> "$INSTALL_LOG"
 done
 
 # ---- Phase 4: Post-install ----

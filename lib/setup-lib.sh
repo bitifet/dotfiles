@@ -25,28 +25,31 @@ confirm() {
 }
 
 # Prompt user to select from a list using whiptail if available, otherwise text.
+# $1 = title, $@ = alternating item/status pairs (item "ON"/"OFF")
 select_categories() {
     local title="$1"; shift
     local items=("$@")
 
     if command -v whiptail &>/dev/null; then
         local args=()
-        for item in "${items[@]}"; do
-            args+=("$item" "" "ON")
+        for ((i=0; i<${#items[@]}; i+=2)); do
+            args+=("${items[i]}" "" "${items[i+1]}")
         done
         whiptail --title "$title" --checklist "Select what to install:" \
-            20 70 "${#items[@]}" "${args[@]}" 3>&1 1>&2 2>&3
+            20 70 "$(( ${#items[@]} / 2 ))" "${args[@]}" 3>&1 1>&2 2>&3
     elif command -v dialog &>/dev/null; then
         local args=()
-        for item in "${items[@]}"; do
-            args+=("$item" "" "ON")
+        for ((i=0; i<${#items[@]}; i+=2)); do
+            args+=("${items[i]}" "" "${items[i+1]}")
         done
         dialog --title "$title" --checklist "Select what to install:" \
-            20 70 "${#items[@]}" "${args[@]}" 3>&1 1>&2 2>&3
+            20 70 "$(( ${#items[@]} / 2 ))" "${args[@]}" 3>&1 1>&2 2>&3
     else
-        echo "==> Available categories:"
-        for item in "${items[@]}"; do
-            echo "    $item"
+        echo "==> Available categories (already installed marked [done]):"
+        for ((i=0; i<${#items[@]}; i+=2)); do
+            local mark=""
+            [ "${items[i+1]}" = "OFF" ] && mark=" [already installed]"
+            echo "    ${items[i]}$mark"
         done
         echo
         read -r -p "Enter category names to install (space-separated, or 'all'): " selection
