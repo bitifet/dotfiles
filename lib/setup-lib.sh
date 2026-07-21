@@ -125,6 +125,7 @@ inject_source_line() {
         return 0
     fi
     ensure_dir "$(dirname "$target_file")"
+    touch "$target_file"
     echo "" >> "$target_file"
     echo "# DotFiles Setup: $marker" >> "$target_file"
     echo "$source_line" >> "$target_file"

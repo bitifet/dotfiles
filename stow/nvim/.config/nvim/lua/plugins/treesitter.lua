@@ -2,19 +2,18 @@ return {
     {
         'nvim-treesitter/nvim-treesitter',
         build = ":TSUpdate",
-        event = { "BufReadPost", "BufNewFile" }, -- Ensure plugin loads for files
+        event = { "BufReadPost", "BufNewFile" },
         config = function()
-            local config = require("nvim-treesitter.configs")
-            config.setup({
+            require("nvim-treesitter.configs").setup({
                 ensure_installed = {
                     "lua", "javascript", "python", "bash", "sql",
                     "go", "ruby", "java", "php", "json", "yaml",
                     "toml", "markdown", "vim", "query", "html", "css",
                     "markdown_inline", "pug"
                 },
-                ensure_installed_sync = true,
+                sync_install = true,
+                auto_install = false,
                 highlight = { enable = true },
-                injections = { enable = true },
                 indent = { enable = true },
             })
         end
