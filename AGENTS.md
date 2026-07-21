@@ -42,6 +42,7 @@ Configs live under `stow/<pkg>/` and get symlinked into `$HOME` via `stow -t ~ <
 | `05-tailscale.sh`       | Mesh VPN                                      |
 | `10-essentials.sh`      | git, curl, stow, build-essential, ssh         |
 | `20-shell.sh`           | tmux, fzf, zellij, xclip, tmate, tpm          |
+| `22-guake.sh`           | Guake terminal (bitifet fork with OSC 52)      |
 | `25-ssh.sh`             | openssh-server, mosh (asks enable/disable)    |
 | `30-editors.sh`         | neovim (latest PPA), vim, ripgrep, fd-find    |
 | `35-brave.sh`           | Brave browser                                 |
