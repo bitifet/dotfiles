@@ -6,6 +6,13 @@ CATEGORY="npm-globals"
 DESCRIPTION="npm global packages (agentp, carlino)"
 
 install() {
+    # Load nvm if available
+    if [ -s "$HOME/.nvm/nvm.sh" ]; then
+        set +eu
+        . "$HOME/.nvm/nvm.sh"
+        set -eu
+    fi
+
     if ! command -v npm &>/dev/null; then
         err "npm not found. Install Node.js first (40-node.sh)."
         return 1

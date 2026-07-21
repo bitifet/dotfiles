@@ -4,19 +4,26 @@
 CATEGORY="node"
 DESCRIPTION="Node.js via nvm with npm global packages"
 
+load_nvm() {
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    if [ -s "$NVM_DIR/nvm.sh" ]; then
+        set +eu  # nvm.sh is not compatible with strict mode
+        . "$NVM_DIR/nvm.sh"
+        set -eu
+    fi
+}
+
 install() {
     if [ -d "$HOME/.nvm" ]; then
         ok "nvm already installed"
-        export NVM_DIR="$HOME/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+        load_nvm
         return 0
     fi
 
     info "Installing nvm..."
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    load_nvm
 
     info "Installing latest LTS Node..."
     nvm install --lts
@@ -24,8 +31,7 @@ install() {
 }
 
 post_install() {
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+    load_nvm
 
     if command -v npm &>/dev/null; then
         info "Installing global npm packages..."
