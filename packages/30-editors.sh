@@ -1,26 +1,42 @@
 #!/usr/bin/env bash
-# Editors: neovim and vim
+# Editors: neovim (latest) and vim with dependencies
 
 CATEGORY="editors"
-DESCRIPTION="Neovim and Vim"
+DESCRIPTION="Neovim (latest) + Vim + editor dependencies"
 
 install() {
-    # Neovim (prefer newer versions from official PPA or direct download)
+    # Neovim dependencies
+    apt_install ripgrep fd-find python3-pip python3-venv unzip curl
+
+    # Install latest neovim via PPA
     if command -v nvim &>/dev/null; then
-        ok "Neovim already installed"
+        info "Neovim already installed: $(nvim --version | head -1)"
     elif apt-cache show neovim &>/dev/null 2>&1; then
-        apt_install neovim
+        # Check if we have the PPA version (0.10+) or distro version
+        local nvim_ver
+        nvim_ver=$(apt-cache show neovim 2>/dev/null | grep -m1 '^Version:' | cut -d' ' -f2 | head -c2)
+        if [ "${nvim_ver:-0}" -ge 10 ] 2>/dev/null; then
+            apt_install neovim
+        else
+            info "Distro neovim is old (v${nvim_ver:-?}). Adding PPA for latest..."
+            sudo add-apt-repository -y ppa:neovim-ppa/unstable
+            sudo apt-get update -qq
+            apt_install neovim
+        fi
     else
-        info "Installing Neovim via snap..."
-        sudo snap install nvim --classic 2>/dev/null || {
-            info "Installing Neovim appimage..."
-            curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
-            chmod +x nvim-linux-x86_64.appimage
-            sudo mv nvim-linux-x86_64.appimage /usr/local/bin/nvim
-        }
+        info "Adding neovim PPA..."
+        sudo add-apt-repository -y ppa:neovim-ppa/unstable
+        sudo apt-get update -qq
+        apt_install neovim
     fi
 
-    apt_install vim python3-pip 2>/dev/null || true
+    apt_install vim 2>/dev/null || true
+
+    # fd-find might be called fdfind on some distros
+    if ! command -v fd &>/dev/null && command -v fdfind &>/dev/null; then
+        ensure_dir "$HOME/.local/bin"
+        ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
+    fi
 }
 
 post_install() {
@@ -50,5 +66,11 @@ post_install() {
         nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
         info "Updating helptags..."
         nvim --headless "+helptags ~/.vim/doc" "+helptags ALL" +qa 2>/dev/null || true
+    fi
+
+    # Install vim plugins
+    if command -v vim &>/dev/null; then
+        info "Installing vim plugins..."
+        vim "+PlugInstall" "+qa" 2>/dev/null || true
     fi
 }

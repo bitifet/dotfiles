@@ -74,11 +74,16 @@ symlink() {
 }
 
 # ---- Apt helpers ----
+INSTALL_LOG="$DOTFILES/.install-log"
+
 apt_install() {
     local pkgs=("$@")
     info "Installing: ${pkgs[*]}"
     sudo apt-get update -qq
     sudo apt-get install -y "${pkgs[@]}"
+    for pkg in "${pkgs[@]}"; do
+        echo "[APT] $pkg" >> "$INSTALL_LOG"
+    done
 }
 
 # ---- Stow helpers ----
@@ -90,6 +95,7 @@ stow_package() {
     fi
     step "Stowing $pkg..."
     stow -v -t "$HOME" -d "$STOW_DIR" "$pkg"
+    echo "[STOW] $pkg" >> "$INSTALL_LOG"
 }
 
 unstow_package() {

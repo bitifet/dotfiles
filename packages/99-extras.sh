@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
-# Extras: optional tools specific to certain workflows or machines
+# Extras: optional tools that don't fit elsewhere
 
 CATEGORY="extras"
-DESCRIPTION="Optional extras (imagemagick, poppler, python tools, powerline)"
+DESCRIPTION="Optional extras (imagemagick, poppler, powerline fonts)"
 
 install() {
-    apt_install imagemagick poppler-utils python3-pip 2>/dev/null || true
+    apt_install imagemagick poppler-utils 2>/dev/null || true
 }
 
 post_install() {
-    # Stow zellij if the package exists (may not want on all machines)
-    if confirm "Install zellij config?"; then
+    if confirm "Install zellij config symlink?"; then
         stow_package zellij || true
     fi
 
-    # Optionally install powerline fonts
     if confirm "Install powerline fonts?"; then
         info "Cloning powerline fonts..."
         git clone https://github.com/powerline/fonts.git /tmp/powerline-fonts 2>/dev/null || true

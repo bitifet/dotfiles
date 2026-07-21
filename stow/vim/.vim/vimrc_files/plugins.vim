@@ -28,4 +28,7 @@ Plug 'SidOfc/mkdx'
 " Matchit (%)
 Plug 'https://github.com/adelarsq/vim-matchit'
 
+" OSC 52 clipboard via escape sequences (works over SSH + tmux):
+Plug 'ojroques/vim-oscyank'
+
 call plug#end()

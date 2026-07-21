@@ -10,25 +10,34 @@ source "$DOTFILES/lib/setup-lib.sh"
 # ---- Option parsing ----
 ALL_MODE=false
 STOW_ONLY=false
+CLEANUP_MODE=false
 ARG_CATEGORIES=()
 
 for arg in "$@"; do
     case "$arg" in
         -h|--help)
-            echo "Usage: install.sh [--all] [--stow] [--packages <name> ...]"
+            echo "Usage: install.sh [--all] [--stow] [--cleanup] [--packages <name> ...]"
             echo ""
             echo "Options:"
             echo "  --all        Install everything non-interactively"
             echo "  --stow       Only create/manage symlinks"
+            echo "  --cleanup    Revert stow symlinks and config changes"
             echo "  --packages   Install specific package scripts (e.g. 30-editors.sh)"
+            echo ""
+            echo "See also: cleanup.sh for more thorough cleanup"
             exit 0
             ;;
-        --all)  ALL_MODE=true ;;
-        --stow) STOW_ONLY=true ;;
+        --all)      ALL_MODE=true ;;
+        --stow)     STOW_ONLY=true ;;
+        --cleanup)  CLEANUP_MODE=true ;;
         --packages) shift; ARG_CATEGORIES+=("$@"); break ;;
-        *)      ARG_CATEGORIES+=("$arg") ;;
+        *)          ARG_CATEGORIES+=("$arg") ;;
     esac
 done
+
+if $CLEANUP_MODE; then
+    exec "$DOTFILES/cleanup.sh" "$@"
+fi
 
 # ---- Discover available packages ----
 PACKAGE_DIR="$DOTFILES/packages"

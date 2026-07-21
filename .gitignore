@@ -1,4 +1,5 @@
 .ocmux.json
+.install-log
 *.sw[po]
 *~
 *.bak
