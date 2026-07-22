@@ -1,10 +1,16 @@
 return {
     {
         'nvim-treesitter/nvim-treesitter',
+        branch = 'master',
         build = ":TSUpdate",
-        event = { "BufReadPost", "BufNewFile" },
+        lazy = false,
         config = function()
-            require("nvim-treesitter").setup({
+            local ok, configs = pcall(require, "nvim-treesitter.configs")
+            if not ok then
+                vim.notify("Warning: nvim-treesitter.configs not found. Run :Lazy sync nvim-treesitter", vim.log.levels.WARN)
+                return
+            end
+            configs.setup({
                 ensure_installed = {
                     "lua", "javascript", "python", "bash", "sql",
                     "go", "ruby", "java", "php", "json", "yaml",

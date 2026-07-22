@@ -6,7 +6,22 @@ DESCRIPTION="Neovim (latest) + Vim + editor dependencies"
 
 install() {
     # Neovim dependencies
-    apt_install ripgrep fd-find python3-pip python3-venv unzip curl
+    apt_install ripgrep fd-find python3-pip python3-venv unzip curl gcc g++ make tar
+
+    # Tree-sitter CLI (needed by nvim-treesitter)
+    if ! command -v tree-sitter &>/dev/null; then
+        info "Installing tree-sitter-cli..."
+        if command -v cargo &>/dev/null; then
+            cargo install tree-sitter-cli 2>/dev/null || \
+                info "tree-sitter-cli: install manually if nvim-treesitter build fails"
+        elif command -v npm &>/dev/null; then
+            npm install -g tree-sitter-cli 2>/dev/null || \
+                info "tree-sitter-cli: install manually if nvim-treesitter build fails"
+        else
+            info "tree-sitter-cli: install manually (cargo install tree-sitter-cli or npm i -g tree-sitter-cli)"
+            info "Needed for nvim-treesitter parser compilation."
+        fi
+    fi
 
     # Install latest neovim via PPA
     if command -v nvim &>/dev/null; then
@@ -66,6 +81,16 @@ post_install() {
         nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
         info "Updating helptags..."
         nvim --headless "+helptags ~/.vim/doc" "+helptags ALL" +qa 2>/dev/null || true
+        # Force-reinstall treesitter if its config module is missing
+        info "Verifying nvim-treesitter..."
+        if nvim --headless -c "lua local ok = pcall(require, 'nvim-treesitter.configs') if ok then vim.cmd('qall!') else vim.cmd('cq') end" 2>/dev/null; then
+            ok "nvim-treesitter configs module found"
+            info "Installing treesitter parsers..."
+            nvim --headless "+TSInstallSync all" +qa 2>/dev/null || true
+        else
+            warn "nvim-treesitter needs reinstall. Run in nvim: :Lazy sync nvim-treesitter"
+            warn "Then run: :TSUpdate"
+        fi
     fi
 
     # Install vim plugins
