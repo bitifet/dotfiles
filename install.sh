@@ -1,185 +1,140 @@
 #!/usr/bin/env bash
+# Bootstrap installer: clones dotfiles and runs setup.sh
+# Safe to curl | bash: curl -sSL https://raw.githubusercontent.com/bitifet/dotfiles/restructure/install.sh | bash
 set -euo pipefail
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)"
-export DOTFILES
-
-# Source shared library
-source "$DOTFILES/lib/setup-lib.sh"
-
-# ---- Option parsing ----
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
+GIT_BRANCH="${GIT_BRANCH:-restructure}"
+GIT_REPO="${GIT_REPO:-git@github.com:bitifet/dotfiles.git}"
+GIT_REPO_HTTPS="https://github.com/bitifet/dotfiles.git"
 ALL_MODE=false
-STOW_ONLY=false
-CLEANUP_MODE=false
-ARG_CATEGORIES=()
+
+info()  { echo "  [INFO] $*"; }
+warn()  { echo "  [WARN] $*" >&2; }
+err()   { echo "  [ERROR] $*" >&2; }
+step()  { echo "==> $*"; }
+ok()    { echo "  [OK] $*"; }
+
+confirm() {
+    local prompt="${1:-Continue?}"
+    local default="${2:-y}"
+    if [ -t 0 ]; then
+        if [ "$default" = "y" ]; then
+            read -r -p "$prompt [Y/n] " reply
+            [ "${reply,,}" != "n" ]
+        else
+            read -r -p "$prompt [y/N] " reply
+            [ "${reply,,}" = "y" ]
+        fi
+    else
+        [ "$default" = "y" ]
+    fi
+}
 
 for arg in "$@"; do
     case "$arg" in
         -h|--help)
-            echo "Usage: install.sh [--all] [--stow] [--cleanup] [--packages <name> ...]"
+            echo "Usage: curl .../install.sh | bash"
+            echo "   or: bash install.sh [--all]"
             echo ""
-            echo "Options:"
-            echo "  --all        Install everything non-interactively"
-            echo "  --stow       Only create/manage symlinks"
-            echo "  --cleanup    Revert stow symlinks and config changes"
-            echo "  --packages   Install specific package scripts (e.g. 30-editors.sh)"
-            echo ""
-            echo "See also: cleanup.sh for more thorough cleanup"
+            echo "Environment variables:"
+            echo "  DOTFILES_DIR   Target directory (default: ~/.dotfiles)"
+            echo "  GIT_BRANCH     Branch to checkout (default: restructure)"
+            echo "  GIT_REPO       Git remote (default: git@github.com:bitifet/dotfiles.git)"
             exit 0
             ;;
-        --all)      ALL_MODE=true ;;
-        --stow)     STOW_ONLY=true ;;
-        --cleanup)  CLEANUP_MODE=true ;;
-        --packages) shift; ARG_CATEGORIES+=("$@"); break ;;
-        *)          ARG_CATEGORIES+=("$arg") ;;
+        --all) ALL_MODE=true ;;
     esac
 done
 
-if $CLEANUP_MODE; then
-    exec "$DOTFILES/cleanup.sh" "$@"
-fi
+echo ""
+echo "================================================================"
+echo "  DotFiles Bootstrap"
+echo "================================================================"
+echo ""
 
-# ---- Discover available packages ----
-PACKAGE_DIR="$DOTFILES/packages"
-AVAILABLE=()
-DECLARED_ORDER=()
-
-if [ -d "$PACKAGE_DIR" ]; then
-    for script in "$PACKAGE_DIR"/*.sh; do
-        [ -f "$script" ] || continue
-        source "$script"
-        if [ -n "${CATEGORY:-}" ]; then
-            AVAILABLE+=("$CATEGORY")
-            DECLARED_ORDER+=("$CATEGORY:$script")
-        fi
-    done
-fi
-
-if [ ${#AVAILABLE[@]} -eq 0 ]; then
-    err "No package scripts found in $PACKAGE_DIR"
-    exit 1
-fi
-
-# ---- Phase 0: Bootstrap stow ----
-step "Checking dependencies..."
-if ! command -v stow &>/dev/null; then
-    info "GNU stow not found. Installing..."
-    sudo apt-get update -qq && sudo apt-get install -y stow || {
-        err "Failed to install stow. Install it manually: sudo apt install stow"
-        exit 1
-    }
-fi
-ok "stow available"
-
-step "Creating symlinks..."
-
-# Always stow these core packages:
-stow_package bash
-stow_package tools
-
-# The rest are stowed by their respective post_install hooks
-# (so we don't create dangling symlinks for uninstalled tools)
-
-# Set up VI mode in bash if .bashrc doesn't already source us
-inject_source_line "$HOME/.bashrc" \
-    "source ~/.config/bash/init.sh" \
-    "DotFiles"
-
-ok "Symlinks created"
-
-if $STOW_ONLY; then
-    echo ""
-    echo "Symlink phase complete. Run 'install.sh' to install software."
-    exit 0
-fi
-
-# ---- Phase 2: Select categories ----
-SELECTED=()
-
-if $ALL_MODE; then
-    SELECTED=("${AVAILABLE[@]}")
-elif [ ${#ARG_CATEGORIES[@]} -gt 0 ]; then
-    SELECTED=("${ARG_CATEGORIES[@]}")
+# ---- Step 1: Ensure git ----
+if ! command -v git &>/dev/null; then
+    step "Installing git..."
+    sudo apt-get update -qq && sudo apt-get install -y git
+    ok "git installed"
 else
-    step "Select software categories to install"
+    ok "git found: $(git --version)"
+fi
+
+# ---- Step 2: Detect old home-as-git-root setup ----
+if [ -d "$HOME/.git" ]; then
+    step "Detected old setup (home directory under git)"
+    warn "Your home directory is currently a git repository."
+    echo ""
+    echo "  Directories to clean: ~/.etc ~/bin ~/.git"
     echo ""
 
-    # Read install log to find already-done categories
-    local done_categories=()
-    if [ -f "$INSTALL_LOG" ]; then
-        while IFS= read -r line; do
-            [[ "$line" =~ ^\[DONE\]\ (.+) ]] && done_categories+=("${BASH_REMATCH[1]}")
-        done < "$INSTALL_LOG"
-    fi
-
-    # Build alternating list: name ON|OFF based on whether already done
-    local select_args=()
-    for cat in "${AVAILABLE[@]}"; do
-        local state="ON"
-        for done_cat in "${done_categories[@]}"; do
-            if [ "$done_cat" = "$cat" ]; then
-                state="OFF"
-                break
-            fi
-        done
-        select_args+=("$cat" "$state")
-    done
-
-    SELECTED_STR=$(select_categories "Software Setup" "${select_args[@]}")
-    SELECTED_STR="${SELECTED_STR//\"/}"
-    IFS=' ' read -ra SELECTED <<< "$SELECTED_STR"
-fi
-
-if [ ${#SELECTED[@]} -eq 0 ]; then
-    warn "No categories selected. Skipping software installation."
-    exit 0
-fi
-
-echo ""
-step "Will install: ${SELECTED[*]}"
-confirm "Proceed?" || exit 0
-echo ""
-
-# ---- Phase 3: Install selected packages ----
-for category in "${SELECTED[@]}"; do
-    script=""
-    for entry in "${DECLARED_ORDER[@]}"; do
-        if [ "${entry%%:*}" = "$category" ]; then
-            script="${entry#*:}"
-            break
+    if [ -t 0 ]; then
+        if ! confirm "Clean up old setup and migrate to stow-based dotfiles?" "n"; then
+            err "Aborted. Remove ~/.git manually before retrying."
+            exit 1
         fi
-    done
-
-    if [ -z "$script" ] || [ ! -f "$script" ]; then
-        warn "Package script for '$category' not found, skipping"
-        continue
+    else
+        warn "Non-interactive mode: skipping old setup cleanup."
+        warn "If you want to clean up, run this script in a terminal."
     fi
 
-    # Source again to get fresh functions (in case variables changed)
-    CATEGORY=""; DESCRIPTION=""
-    source "$script"
+    # Check for local modifications before removing
+    if [ -d "$HOME/.etc" ]; then
+        local changes
+        changes=$(git -C "$HOME" status --porcelain .etc/ 2>/dev/null || true)
+        if [ -n "$changes" ]; then
+            warn "~/.etc has uncommitted changes:"
+            echo "$changes"
+            confirm "Remove ~/.etc anyway?" "n" || { err "Aborted."; exit 1; }
+        fi
+        rm -rf "$HOME/.etc"
+        ok "Removed ~/.etc"
+    fi
 
-    echo ""
-    echo "================================================================"
-    echo "  Installing: $category"
-    echo "  $DESCRIPTION"
-    echo "================================================================"
-    echo ""
+    if [ -d "$HOME/bin" ]; then
+        local changes
+        changes=$(git -C "$HOME" status --porcelain bin/ 2>/dev/null || true)
+        if [ -n "$changes" ]; then
+            warn "~/bin has uncommitted changes:"
+            echo "$changes"
+            confirm "Remove ~/bin anyway?" "n" || { err "Aborted."; exit 1; }
+        fi
+        rm -rf "$HOME/bin"
+        ok "Removed ~/bin"
+    fi
 
-    install
-    post_install
-    echo "[DONE] $category" >> "$INSTALL_LOG"
-done
+    rm -rf "$HOME/.git"
+    ok "Removed ~/.git"
+fi
 
-# ---- Phase 4: Post-install ----
-echo ""
-echo "================================================================"
-echo "  Setup complete!"
-echo "================================================================"
-echo ""
-echo "Next steps:"
-echo "  - Restart your shell or run: source ~/.bashrc"
-echo "  - Launch tmux and press prefix + I to install tmux plugins"
-echo "  - Run ':Lazy sync' in neovim if plugins didn't install"
-echo "  - Set up git identity: git config --global user.name/email"
-echo ""
+# ---- Step 3: Clone the repo ----
+if [ -d "$DOTFILES_DIR/.git" ]; then
+    ok "Dotfiles already cloned at $DOTFILES_DIR"
+else
+    step "Cloning dotfiles..."
+
+    local clone_url="$GIT_REPO"
+
+    # If no SSH keys and not explicitly overridden, use HTTPS
+    if [ "${GIT_REPO:-}" = "git@github.com:bitifet/dotfiles.git" ]; then
+        if ! ssh -o BatchMode=yes -o ConnectTimeout=3 git@github.com 2>&1 | grep -q 'successfully authenticated'; then
+            if confirm "SSH to GitHub failed. Use HTTPS instead?"; then
+                clone_url="$GIT_REPO_HTTPS"
+            fi
+        fi
+    fi
+
+    git clone -b "$GIT_BRANCH" "$clone_url" "$DOTFILES_DIR"
+    ok "Cloned to $DOTFILES_DIR"
+fi
+
+# ---- Step 4: Run setup.sh ----
+step "Running setup..."
+cd "$DOTFILES_DIR"
+
+SETUP_ARGS=""
+$ALL_MODE && SETUP_ARGS="--all"
+
+exec ./setup.sh $SETUP_ARGS

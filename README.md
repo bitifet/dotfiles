@@ -5,16 +5,22 @@ Personal configuration files and scripts, managed with **GNU stow**.
 ## Quick start
 
 ```bash
-git clone https://github.com/bitifet/dotfiles.git ~/.dotfiles
+# Remote bootstrap (one-liner):
+curl -sSL https://raw.githubusercontent.com/bitifet/dotfiles/restructure/install.sh | bash
+
+# Or manual clone:
+git clone -b restructure https://github.com/bitifet/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./install.sh
+./setup.sh
 ```
 
 The installer is interactive by default — select what to install per machine.
 
 ```bash
-./install.sh --all      # Install everything non-interactively
-./install.sh --stow     # Only create symlinks, skip software
+./setup.sh --all      # Install everything non-interactively
+./setup.sh --stow     # Only create symlinks, skip software
+./setup.sh --cleanup  # Revert stow symlinks and config changes
+./cleanup.sh          # Revert stow + APT packages (interactive)
 ```
 
 ## What's included

@@ -29,11 +29,15 @@ Configs live under `stow/<pkg>/` and get symlinked into `$HOME` via `stow -t ~ <
 
 ## Setup
 
-    ./install.sh          # interactive: select what to install
-    ./install.sh --all    # install everything non-interactively
-    ./install.sh --stow   # only create symlinks
-    ./install.sh --cleanup  # revert stow symlinks and config changes
+    ./install.sh          # bootstrap: clones repo + runs setup
+    ./setup.sh            # interactive: select what to install
+    ./setup.sh --all      # install everything non-interactively
+    ./setup.sh --stow     # only create symlinks
+    ./setup.sh --cleanup  # revert stow symlinks and config changes
     ./cleanup.sh          # revert stow + APT packages (interactive)
+
+Remote bootstrap (one-liner):
+    curl -sSL https://raw.githubusercontent.com/bitifet/dotfiles/restructure/install.sh | bash
 
 ### Package scripts (interactive checkboxes via whiptail/dialog)
 

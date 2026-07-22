@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cleanup.sh - Revert changes made by install.sh
+# cleanup.sh - Revert changes made by setup.sh
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "$0")" && pwd)"
