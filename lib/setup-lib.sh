@@ -9,6 +9,7 @@ info()  { echo "  [INFO] $*"; }
 warn()  { echo "  [WARN] $*" >&2; }
 err()   { echo "  [ERROR] $*" >&2; }
 step()  { echo -e "\033[1;36m==>\033[0m \033[1m$*\033[0m"; }
+banner(){ echo -e "\n\033[1;36m================================\033[0m\n\033[1m$*\033[0m\n\033[1;36m================================\033[0m\n"; }
 ok()    { echo "  [OK] $*"; }
 
 # ---- User interaction ----
@@ -33,22 +34,28 @@ select_categories() {
     if command -v whiptail &>/dev/null; then
         local args=()
         for ((i=0; i<${#items[@]}; i+=2)); do
-            args+=("${items[i]}" "" "${items[i+1]}")
+            local label="${items[i]}"
+            local desc=""
+            [ "${items[i+1]}" = "OFF" ] && desc="[already installed]"
+            args+=("$label" "$desc" "${items[i+1]}")
         done
         whiptail --title "$title" --checklist "Select what to install:" \
             20 70 "$(( ${#items[@]} / 2 ))" "${args[@]}" 3>&1 1>&2 2>&3
     elif command -v dialog &>/dev/null; then
         local args=()
         for ((i=0; i<${#items[@]}; i+=2)); do
-            args+=("${items[i]}" "" "${items[i+1]}")
+            local label="${items[i]}"
+            local desc=""
+            [ "${items[i+1]}" = "OFF" ] && desc="[already installed]"
+            args+=("$label" "$desc" "${items[i+1]}")
         done
         dialog --title "$title" --checklist "Select what to install:" \
             20 70 "$(( ${#items[@]} / 2 ))" "${args[@]}" 3>&1 1>&2 2>&3
     else
-        echo "==> Available categories (already installed marked [done]):"
+        echo "==> Available categories (already installed marked with ✅):"
         for ((i=0; i<${#items[@]}; i+=2)); do
             local mark=""
-            [ "${items[i+1]}" = "OFF" ] && mark=" [already installed]"
+            [ "${items[i+1]}" = "OFF" ] && mark=" ✅"
             echo "    ${items[i]}$mark"
         done
         echo

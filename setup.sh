@@ -174,11 +174,7 @@ for category in "${SELECTED[@]}"; do
     source "$script"
 
     echo ""
-    echo "================================================================"
-    echo "  Installing: $category"
-    echo "  $DESCRIPTION"
-    echo "================================================================"
-    echo ""
+    banner "Installing: $category — $DESCRIPTION"
 
     install
     post_install
@@ -186,13 +182,10 @@ for category in "${SELECTED[@]}"; do
 done
 
 # ---- Phase 4: Post-install ----
-echo ""
-echo "================================================================"
-echo "  Setup complete!"
-echo "================================================================"
-echo ""
+banner "Setup complete!"
+
 echo "Next steps:"
-echo "  - Restart your shell or run: source ~/.bashrc"
+echo "  - Restart your terminal or run: source ~/.bashrc"
 echo "  - Launch tmux and press prefix + I to install tmux plugins"
 echo "  - Run ':Lazy sync' in neovim if plugins didn't install"
 echo ""
