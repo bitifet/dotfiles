@@ -23,8 +23,8 @@ Configs live under `stow/<pkg>/` and get symlinked into `$HOME` via `stow -t ~ <
   via the vimrc_files directory.
 - **Tmux** prefix is `Tab` (not `C-b`). Plugins managed by tpm (installed by setup script).
   Tmux plugins are NOT tracked in this repo — tpm installs them at runtime.
-- `.ocmux.json` is **gitignored**. It's a runtime state file created/consumed by `bin/ocmux`.
-  Never commit it.
+- `.ocmux.json` is **gitignored**. It's a runtime state file created/consumed by `ocmux`
+  (now distributed via the `agentp` npm package).
 - `stow/git/` exists but is empty — add `.gitconfig` there for per-machine git identity.
 
 ## Setup
@@ -60,7 +60,7 @@ Remote bootstrap (one-liner):
 ## ocmux
 
 Manages opencode servers in a dedicated tmux session (`Opencode`).
-The script is at `stow/tools/.local/bin/ocmux`. Commands:
+Now distributed via the `agentp` npm package. Commands:
 
     ocmux          # Switch to the opencode server found upward from $PWD
     ocmux new      # Start a new opencode server in $PWD

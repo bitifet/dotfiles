@@ -30,7 +30,7 @@ The installer is interactive by default — select what to install per machine.
 | `nvim`         | Neovim config (lazy.nvim, telescope, LSP)   |
 | `vim`          | Lightweight Vim fallback (shares config)    |
 | `tmux`         | Tmux config (prefix=Tab, tpm, resurrect)    |
-| `tools`        | Utility scripts (ocmux, supergrep, f, ...)  |
+| `tools`        | Utility scripts (f, supergrep, git-fetchpr, ...)  |
 | `less`         | less pager keybindings                      |
 | `zellij`       | Zellij multiplexer config                   |
 | `git`           | (empty — add per-machine .gitconfig)         |
