@@ -65,6 +65,13 @@ if [ -d "$HOME/.git" ]; then
         fi
     fi
 
+    # Remove old source line from .bashrc
+    if [ -f "$HOME/.bashrc" ]; then
+        sed -i '/^# DotFiles Setup:/{N;d}' "$HOME/.bashrc"
+        sed -i '\|^source ~/.etc/bashrc|d' "$HOME/.bashrc"
+        ok "Cleaned old DotFiles lines from ~/.bashrc"
+    fi
+
     rm -rf "$HOME/.git"
     ok "Removed ~/.git"
 fi
