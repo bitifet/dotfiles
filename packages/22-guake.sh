@@ -7,6 +7,7 @@ DESCRIPTION="Guake terminal (forked with OSC 52 clipboard support)"
 install() {
     if command -v guake &>/dev/null && guake --version 2>/dev/null | grep -q bitifet; then
         ok "Guake (bitifet fork) already installed"
+        _GUAKE_ALREADY_INSTALLED=1
         return 0
     fi
 
@@ -40,6 +41,9 @@ install() {
 }
 
 post_install() {
+    if [ "${_GUAKE_ALREADY_INSTALLED:-0}" = "1" ]; then
+        return 0
+    fi
     if command -v guake &>/dev/null; then
         if confirm "Restart Guake now?"; then
             pkill guake 2>/dev/null || true
