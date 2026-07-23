@@ -5,6 +5,11 @@ CATEGORY="guake"
 DESCRIPTION="Guake terminal (forked with OSC 52 clipboard support)"
 
 install() {
+    if command -v guake &>/dev/null && guake --version 2>/dev/null | grep -q bitifet; then
+        ok "Guake (bitifet fork) already installed"
+        return 0
+    fi
+
     if ! confirm "Build and install Guake from bitifet fork?"; then
         return 0
     fi
