@@ -104,24 +104,71 @@ stow_package() {
         return 1
     fi
 
-    # Pre-check: find and backup any files that would conflict with stow
+    # Collect targets that conflict (existing non-symlinks that would be overwritten)
+    local conflicts=()
     while IFS= read -r file; do
         local target="$HOME/${file#$STOW_DIR/$pkg/}"
         if [ -e "$target" ] && [ ! -L "$target" ]; then
-            warn "$target already exists, backing up to ${target}.bak"
-            mv "$target" "${target}.bak"
+            conflicts+=("$target")
         fi
     done < <(find "$STOW_DIR/$pkg" -type f -not -path '*/.git/*')
 
+    if [ ${#conflicts[@]} -gt 0 ]; then
+        # Gather unique parent directories, shallowest first
+        local dirs=()
+        for f in "${conflicts[@]}"; do
+            dirs+=("$(dirname "$f")")
+        done
+        local unique_dirs=()
+        while IFS= read -r d; do
+            [ -n "$d" ] && unique_dirs+=("$d")
+        done < <(printf '%s\n' "${dirs[@]}" | sort -u)
+
+        # Back up the shallowest directories that cover all conflicts
+        local backed_up=()
+        for d in "${unique_dirs[@]}"; do
+            local covered=false
+            for b in "${backed_up[@]}"; do
+                if [[ "$d" == "$b"/* ]] || [ "$d" = "$b" ]; then
+                    covered=true
+                    break
+                fi
+            done
+            $covered && continue
+
+            if [ -d "$d" ] && [ ! -L "$d" ]; then
+                warn "$d already exists, backing up to ${d}.bak"
+                mv "$d" "${d}.bak"
+                backed_up+=("$d")
+            fi
+        done
+
+        # Handle any remaining files whose parent wasn't a backed-up dir
+        for f in "${conflicts[@]}"; do
+            if [ ! -e "$f" ]; then continue; fi
+            local covered=false
+            for b in "${backed_up[@]}"; do
+                if [[ "$f" == "$b"/* ]]; then
+                    covered=true; break
+                fi
+            done
+            $covered && continue
+            if [ -f "$f" ] && [ ! -L "$f" ]; then
+                warn "$f already exists, backing up to ${f}.bak"
+                mv "$f" "${f}.bak"
+            fi
+        done
+    fi
+
     step "Stowing $pkg..."
-    stow -v -t "$HOME" -d "$STOW_DIR" "$pkg"
+    stow -v --no-folding -t "$HOME" -d "$STOW_DIR" "$pkg"
     echo "[STOW] $pkg" >> "$INSTALL_LOG"
 }
 
 unstow_package() {
     local pkg="$1"
     step "Unstowing $pkg..."
-    stow -v -D -t "$HOME" -d "$STOW_DIR" "$pkg" 2>/dev/null || true
+    stow -v --no-folding -D -t "$HOME" -d "$STOW_DIR" "$pkg" 2>/dev/null || true
 }
 
 # ---- Shell config injection ----

@@ -75,6 +75,33 @@ if git -C "$DOTFILES" remote get-url origin 2>/dev/null | grep -q '^https://'; t
     fi
 fi
 
+# Check for leftover .bak files from a previous failed run
+if find "$HOME" -maxdepth 5 -name '*.bak' 2>/dev/null | grep -q .; then
+    warn "Found leftover .bak files from a previous run:"
+    find "$HOME" -maxdepth 5 -name '*.bak' 2>/dev/null | while IFS= read -r f; do
+        echo "    $f"
+    done
+    echo ""
+    if confirm "Remove them?" "n"; then
+        find "$HOME" -maxdepth 5 -name '*.bak' -exec rm -rf {} + 2>/dev/null || true
+        ok "Removed .bak files"
+    else
+        info "Leaving .bak files in place. Remove manually if needed."
+    fi
+    echo ""
+fi
+
+# Check for deleted files in the stow directory (stale stow symlinks?)
+if git -C "$DOTFILES" status --porcelain stow/ 2>/dev/null | grep -q '^[[:space:]]*D\|^[[:space:]]*M'; then
+    warn "Stow directory has uncommitted changes:"
+    git -C "$DOTFILES" status --short stow/ 2>/dev/null
+    if confirm "Restore stow directory to HEAD?" "n"; then
+        git -C "$DOTFILES" checkout -- stow/ 2>/dev/null || true
+        ok "Stow directory restored"
+    fi
+    echo ""
+fi
+
 step "Checking dependencies..."
 if ! command -v stow &>/dev/null; then
     info "GNU stow not found. Installing..."
