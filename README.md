@@ -8,8 +8,7 @@ Personal configuration files and scripts, managed with **GNU stow**.
 # Remote bootstrap (one-liner):
 curl -sSL https://raw.githubusercontent.com/bitifet/dotfiles/restructure/install.sh | bash
 
-# Or manual clone:
-git clone -b restructure https://github.com/bitifet/dotfiles.git ~/.dotfiles
+# Then continue with setup:
 cd ~/.dotfiles
 ./setup.sh
 ```

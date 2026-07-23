@@ -61,6 +61,20 @@ if [ ${#AVAILABLE[@]} -eq 0 ]; then
 fi
 
 # ---- Phase 0: Bootstrap stow ----
+step "Checking environment..."
+
+# Offer to switch git remote from HTTPS to SSH
+if git -C "$DOTFILES" remote get-url origin 2>/dev/null | grep -q '^https://'; then
+    if ssh -o BatchMode=yes -o ConnectTimeout=3 git@github.com 2>&1 | grep -q 'successfully authenticated'; then
+        if confirm "Switch git remote to SSH?"; then
+            git -C "$DOTFILES" remote set-url origin git@github.com:bitifet/dotfiles.git
+            ok "Remote switched to SSH"
+        fi
+    else
+        info "Run ./setup.sh again after setting up SSH keys to switch remote."
+    fi
+fi
+
 step "Checking dependencies..."
 if ! command -v stow &>/dev/null; then
     info "GNU stow not found. Installing..."
