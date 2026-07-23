@@ -8,7 +8,7 @@ STOW_DIR="$DOTFILES/stow"
 info()  { echo "  [INFO] $*"; }
 warn()  { echo "  [WARN] $*" >&2; }
 err()   { echo "  [ERROR] $*" >&2; }
-step()  { echo "==> $*"; }
+step()  { echo -e "\033[1;36m==>\033[0m \033[1m$*\033[0m"; }
 ok()    { echo "  [OK] $*"; }
 
 # ---- User interaction ----

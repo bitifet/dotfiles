@@ -119,7 +119,7 @@ else
     echo ""
 
     # Read install log to find already-done categories
-    local done_categories=()
+    done_categories=()
     if [ -f "$INSTALL_LOG" ]; then
         while IFS= read -r line; do
             [[ "$line" =~ ^\[DONE\]\ (.+) ]] && done_categories+=("${BASH_REMATCH[1]}")
@@ -127,9 +127,9 @@ else
     fi
 
     # Build alternating list: name ON|OFF based on whether already done
-    local select_args=()
+    select_args=()
     for cat in "${AVAILABLE[@]}"; do
-        local state="ON"
+        state="ON"
         for done_cat in "${done_categories[@]}"; do
             if [ "$done_cat" = "$cat" ]; then
                 state="OFF"
