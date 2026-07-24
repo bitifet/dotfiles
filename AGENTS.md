@@ -54,6 +54,7 @@ Remote bootstrap (one-liner):
 | `45-npm-globals.sh`     | agentp, carlino (npm i -g)                    |
 | `50-libreoffice.sh`     | LibreOffice (latest PPA)                      |
 | `60-touchpad.sh`        | Tap-to-click via libinput (auto-detects)      |
+| `65-power.sh`           | Lid close: suspend-then-hibernate / lock      |
 | `70-capslock.sh`        | CapsLock→Escape (auto-detect DE)              |
 | `99-extras.sh`          | imagemagick, poppler, powerline fonts         |
 
