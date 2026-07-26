@@ -22,6 +22,9 @@ The installer is interactive by default — select what to install per machine.
 ./cleanup.sh          # Revert stow + APT packages (interactive)
 ```
 
+See [USAGE.md](USAGE.md) for a detailed guide on customizing and maintaining
+your dotfiles.
+
 ## What's included
 
 | Package        | Contents                                    |

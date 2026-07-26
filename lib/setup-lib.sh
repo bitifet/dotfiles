@@ -109,6 +109,12 @@ stow_package() {
     while IFS= read -r file; do
         local target="$HOME/${file#$STOW_DIR/$pkg/}"
         if [ -e "$target" ] && [ ! -L "$target" ]; then
+            # Skip if the resolved path is already inside the dotfiles repo
+            local real_target
+            real_target="$(readlink -f "$target" 2>/dev/null || echo "$target")"
+            if [[ "$real_target" == "$DOTFILES"/* ]]; then
+                continue
+            fi
             conflicts+=("$target")
         fi
     done < <(find "$STOW_DIR/$pkg" -type f -not -path '*/.git/*')

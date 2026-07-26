@@ -31,6 +31,10 @@ export CHAT_GPT_KEY=$(cat ~/.config/openai.token)
 alias lssh='/usr/bin/ssh -o KexAlgorithms=diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-dss'
 # Credits: https://askubuntu.com/a/885396/585248
 
+# Mosh escape key: use Ctrl+Space instead of Ctrl+^ (awkward on Spanish layout)
+# Alternatives: '@'=Ctrl+Space, '\'=Ctrl+\, '^'=Ctrl+^ (default)
+export MOSH_ESCAPE_KEY='@'
+
 # Git prompt:
 source ~/.local/bin/git-prompt.sh
 PS1="${PS1:0:${#PS1}-3}\$(__git_ps1)\\$ "
