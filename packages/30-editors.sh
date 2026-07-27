@@ -23,28 +23,45 @@ install() {
         fi
     fi
 
-    # Install latest neovim via PPA
+    # Install latest neovim
     if command -v nvim &>/dev/null; then
         info "Neovim already installed: $(nvim --version | head -1)"
-    elif apt-cache show neovim &>/dev/null 2>&1; then
-        # Check if we have the PPA version (0.10+) or distro version
-        local nvim_ver
-        nvim_ver=$(apt-cache show neovim 2>/dev/null | grep -m1 '^Version:' | cut -d' ' -f2 | head -c2)
-        if [ "${nvim_ver:-0}" -ge 10 ] 2>/dev/null; then
-            apt_install neovim
-        else
-            info "Distro neovim is old (v${nvim_ver:-?}). Adding PPA for latest..."
-            ensure_add_apt_repository
-            sudo add-apt-repository -y ppa:neovim-ppa/unstable
-            sudo apt-get update -qq
-            apt_install neovim
-        fi
     else
-        info "Adding neovim PPA..."
-        ensure_add_apt_repository
-        sudo add-apt-repository -y ppa:neovim-ppa/unstable
-        sudo apt-get update -qq
-        apt_install neovim
+        local installed=false
+
+        # Try 1: distro package if recent enough
+        if apt-cache show neovim &>/dev/null 2>&1; then
+            local nvim_ver
+            nvim_ver=$(apt-cache show neovim 2>/dev/null | grep -m1 '^Version:' | cut -d' ' -f2 | head -c2)
+            if [ "${nvim_ver:-0}" -ge 10 ] 2>/dev/null; then
+                apt_install neovim
+                installed=true
+            fi
+        fi
+
+        # Try 2: PPA if add-apt-repository is available
+        if ! $installed && ensure_add_apt_repository; then
+            info "Adding neovim PPA..."
+            sudo add-apt-repository -y ppa:neovim-ppa/unstable && {
+                sudo apt-get update -qq
+                apt_install neovim
+                installed=true
+            }
+        fi
+
+        # Try 3: AppImage fallback
+        if ! $installed; then
+            warn "Could not install neovim via apt/PPA."
+            if confirm "Download neovim AppImage instead?"; then
+                local nvim_url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
+                info "Downloading neovim AppImage..."
+                sudo curl -L -o /usr/local/bin/nvim "$nvim_url"
+                sudo chmod +x /usr/local/bin/nvim
+                ok "Neovim AppImage installed to /usr/local/bin/nvim"
+            else
+                info "Skipping neovim. Install manually later."
+            fi
+        fi
     fi
 
     apt_install vim 2>/dev/null || true

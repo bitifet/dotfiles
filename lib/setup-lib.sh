@@ -98,11 +98,16 @@ apt_install() {
 
 # Ensure add-apt-repository is available (installs software-properties-common)
 ensure_add_apt_repository() {
-    if ! command -v add-apt-repository &>/dev/null; then
-        info "Installing software-properties-common (needed for add-apt-repository)..."
-        sudo apt-get update -qq
-        sudo apt-get install -y software-properties-common
+    if command -v add-apt-repository &>/dev/null; then
+        return 0
     fi
+    info "Attempting to install add-apt-repository..."
+    sudo apt-get update -qq
+    sudo apt-get install -y software-properties-common 2>/dev/null || \
+    sudo apt-get install -y python3-software-properties 2>/dev/null || {
+        warn "Could not install add-apt-repository. PPA setup skipped."
+        return 1
+    }
 }
 
 # ---- Stow helpers ----

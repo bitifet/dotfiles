@@ -21,8 +21,12 @@ install() {
     fi
 
     info "Adding LibreOffice PPA..."
-    ensure_add_apt_repository
-    sudo add-apt-repository -y ppa:libreoffice/ppa
-    sudo apt-get update -qq
-    apt_install libreoffice libreoffice-l10n-ca libreoffice-help-ca 2>/dev/null || apt_install libreoffice
+    if ensure_add_apt_repository; then
+        sudo add-apt-repository -y ppa:libreoffice/ppa
+        sudo apt-get update -qq
+        apt_install libreoffice libreoffice-l10n-ca libreoffice-help-ca 2>/dev/null || apt_install libreoffice
+    else
+        info "PPA not available, installing distro version..."
+        apt_install libreoffice 2>/dev/null || true
+    fi
 }
