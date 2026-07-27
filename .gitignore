@@ -1,5 +1,7 @@
 .ocmux.json
 .install-log
+stow/git/.gitconfig
+stow/vim/.vim/plugged/
 *.sw[po]
 *~
 .DS_Store

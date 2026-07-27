@@ -25,7 +25,7 @@ export PROMPT_DIRTRIM=2
 alias open='xdg-open'
 
 # OpenAI:
-export CHAT_GPT_KEY=$(cat ~/.config/openai.token)
+[ -f ~/.config/openai.token ] && export CHAT_GPT_KEY=$(cat ~/.config/openai.token)
 
 # Legacy SSH:
 alias lssh='/usr/bin/ssh -o KexAlgorithms=diffie-hellman-group14-sha1 -oHostKeyAlgorithms=+ssh-dss'

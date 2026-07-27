@@ -3,7 +3,7 @@
 " ======================================
 "
 " Author: Joan Miquel Torres <joanmi@bitifet.net>
-" Source: https://github.com/bitifet/homedir/blob/master/.vimrc
+" Source: https://github.com/bitifet/dotfiles
 " Credits:
 "    * "Vim recipes" (Bram Moolenar)
 "    * Other contributions credits in its own script heading.

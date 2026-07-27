@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shell tools: bash, tmux, fzf, zellij, xclip, less, tmate, screen
+# Shell tools: tmux, fzf, screen, tpm
 
 CATEGORY="shell"
 DESCRIPTION="Shell & terminal tools (tmux, fzf, zellij, xclip)"

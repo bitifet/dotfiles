@@ -37,7 +37,7 @@ install() {
 
     ok "Guake installed"
 
-    echo "[APT] guake" >> "$DOTFILES/.install-log"
+    echo "[BUILD] guake" >> "$DOTFILES/.install-log"
 }
 
 post_install() {

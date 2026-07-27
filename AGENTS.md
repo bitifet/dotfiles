@@ -45,12 +45,12 @@ Remote bootstrap (one-liner):
 |-------------------------|-----------------------------------------------|
 | `05-tailscale.sh`       | Mesh VPN                                      |
 | `10-essentials.sh`      | git, curl, stow, build-essential, ssh         |
-| `20-shell.sh`           | tmux, fzf, zellij, xclip, tmate, tpm          |
+| `20-shell.sh`           | tmux, fzf, screen, tpm                        |
 | `22-guake.sh`           | Guake terminal (bitifet fork with OSC 52)      |
 | `25-ssh.sh`             | openssh-server, mosh (asks enable/disable)    |
 | `30-editors.sh`         | neovim (latest PPA), vim, ripgrep, fd-find    |
 | `35-brave.sh`           | Brave browser                                 |
-| `40-node.sh`            | nvm + Node.js LTS                             |
+| `40-node.sh`            | nvm + Node.js LTS (and underscore-cli)        |
 | `45-npm-globals.sh`     | agentp, carlino (npm i -g)                    |
 | `50-libreoffice.sh`     | LibreOffice (latest PPA)                      |
 | `60-touchpad.sh`        | Tap-to-click via libinput (auto-detects)      |
@@ -75,7 +75,7 @@ Each server runs `opencode serve --port 0` in a tmux window named after the proj
 
 - Prefix is `Tab`. Press `Tab` twice to send literal Tab to apps.
 - `F12` toggles to/from the Opencode tmux session.
-- TERM set to `screen.xterm-256color` in tmux.conf.
+- TERM set to `tmux-256color` in tmux.conf.
 - TPM plugins (resurrect) are installed by the setup script, not tracked in git.
 
 ## Editors
