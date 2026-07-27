@@ -91,9 +91,9 @@ if find "$HOME" -maxdepth 5 -name '*.bak' 2>/dev/null | grep -q .; then
     echo ""
 fi
 
-# Check for deleted files in the stow directory (stale stow symlinks?)
-if git -C "$DOTFILES" status --porcelain stow/ 2>/dev/null | grep -q '^[[:space:]]*D\|^[[:space:]]*M'; then
-    warn "Stow directory has uncommitted changes:"
+# Check for deleted files in the stow directory (indicates corrupted state)
+if git -C "$DOTFILES" status --porcelain stow/ 2>/dev/null | grep -q '^.D\|^D'; then
+    warn "Stow directory has deleted files (may be corrupted):"
     git -C "$DOTFILES" status --short stow/ 2>/dev/null
     if confirm "Restore stow directory to HEAD?" "n"; then
         git -C "$DOTFILES" checkout -- stow/ 2>/dev/null || true
