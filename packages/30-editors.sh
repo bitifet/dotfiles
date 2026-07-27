@@ -8,18 +8,17 @@ install() {
     # Neovim dependencies
     apt_install ripgrep fd-find python3-pip python3-venv unzip curl gcc g++ make tar
 
-    # Tree-sitter CLI (needed by nvim-treesitter, requires >=0.26.1 for main branch)
+    # Tree-sitter CLI (needed by nvim-treesitter)
     if ! command -v tree-sitter &>/dev/null; then
         info "Installing tree-sitter-cli..."
         if command -v cargo &>/dev/null; then
-            cargo install tree-sitter-cli@">=0.26" 2>/dev/null && ok "tree-sitter-cli installed via cargo" || \
+            cargo install tree-sitter-cli 2>/dev/null && ok "tree-sitter-cli installed via cargo" || \
                 info "tree-sitter-cli: install manually (cargo install tree-sitter-cli)"
         elif command -v npm &>/dev/null; then
-            info "tree-sitter-cli: recommended via cargo (apt/cargo preferred over npm for v0.26+)"
             npm install -g tree-sitter-cli 2>/dev/null || \
                 info "tree-sitter-cli: install manually if nvim-treesitter build fails"
         else
-            info "tree-sitter-cli: install manually (cargo install tree-sitter-cli)"
+            info "tree-sitter-cli: install manually (cargo install tree-sitter-cli or npm i -g tree-sitter-cli)"
         fi
     else
         ok "tree-sitter-cli found: $(tree-sitter --version | head -1)"
@@ -31,17 +30,17 @@ install() {
     else
         local installed=false
 
-        # Try 1: distro package if recent enough
+        # Try 1: distro package if recent enough (>=0.9 is fine with master branch)
         if apt-cache show neovim &>/dev/null 2>&1; then
             local nvim_ver
             nvim_ver=$(apt-cache show neovim 2>/dev/null | grep -m1 '^Version:' | cut -d' ' -f2 | head -c2)
-            if [ "${nvim_ver:-0}" -ge 10 ] 2>/dev/null; then
+            if [ "${nvim_ver:-0}" -ge 9 ] 2>/dev/null; then
                 apt_install neovim
                 installed=true
             fi
         fi
 
-        # Try 2: PPA if add-apt-repository is available
+        # Try 2: PPA if add-apt-repository is available (Ubuntu)
         if ! $installed && ensure_add_apt_repository; then
             info "Adding neovim PPA..."
             sudo add-apt-repository -y ppa:neovim-ppa/unstable && {
@@ -51,18 +50,9 @@ install() {
             }
         fi
 
-        # Try 3: AppImage fallback
         if ! $installed; then
-            warn "Could not install neovim via apt/PPA."
-            if confirm "Download neovim AppImage instead?"; then
-                local nvim_url="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
-                info "Downloading neovim AppImage..."
-                sudo curl -L -o /usr/local/bin/nvim "$nvim_url"
-                sudo chmod +x /usr/local/bin/nvim
-                ok "Neovim AppImage installed to /usr/local/bin/nvim"
-            else
-                info "Skipping neovim. Install manually later."
-            fi
+            warn "Could not install neovim."
+            info "Install manually: https://github.com/neovim/neovim/releases"
         fi
     fi
 
@@ -104,14 +94,8 @@ post_install() {
         nvim --headless "+helptags ~/.vim/doc" "+helptags ALL" +qa 2>/dev/null || true
         # Force-reinstall treesitter if its config module is missing
         info "Verifying nvim-treesitter..."
-        if nvim --headless -c "lua local ok = pcall(require, 'nvim-treesitter') if ok then vim.cmd('qall!') else vim.cmd('cq') end" 2>/dev/null; then
-            ok "nvim-treesitter module found"
-            # Remove old parsers: AppImage neovim may need recompilation
-            local parser_dir="$HOME/.local/share/nvim/site/parser"
-            if [ -d "$parser_dir" ]; then
-                info "Cleaning old treesitter parsers for fresh rebuild..."
-                rm -rf "$parser_dir"
-            fi
+        if nvim --headless -c "lua local ok = pcall(require, 'nvim-treesitter.configs') if ok then vim.cmd('qall!') else vim.cmd('cq') end" 2>/dev/null; then
+            ok "nvim-treesitter configs module found"
             info "Installing treesitter parsers..."
             nvim --headless "+TSInstallSync all" +qa 2>/dev/null || true
         else

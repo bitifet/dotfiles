@@ -1,27 +1,26 @@
 return {
     {
         'nvim-treesitter/nvim-treesitter',
-        branch = 'main',
-        lazy = false,
+        branch = 'master',
         build = ':TSUpdate',
+        lazy = false,
         config = function()
-            require('nvim-treesitter').setup {
-                install_dir = vim.fn.stdpath('data') .. '/site',
-            }
-
-            -- Enable highlighting for all treesitter filetypes
-            vim.api.nvim_create_autocmd('FileType', {
-                callback = function()
-                    pcall(vim.treesitter.start)
-                end,
+            local ok, configs = pcall(require, 'nvim-treesitter.configs')
+            if not ok then
+                vim.notify('nvim-treesitter not loaded. Run :Lazy sync nvim-treesitter', vim.log.levels.WARN)
+                return
+            end
+            configs.setup({
+                ensure_installed = {
+                    'lua', 'javascript', 'python', 'bash', 'sql',
+                    'json', 'yaml', 'toml', 'markdown', 'vim', 'query',
+                    'html', 'css', 'markdown_inline', 'pug'
+                },
+                sync_install = true,
+                auto_install = false,
+                highlight = { enable = true },
+                indent = { enable = true },
             })
-
-            -- Install parsers (async: sync via TSInstallSync in post_install)
-            require('nvim-treesitter').install {
-                'lua', 'javascript', 'python', 'bash', 'sql',
-                'json', 'yaml', 'toml', 'markdown', 'vim', 'query',
-                'html', 'css', 'markdown_inline', 'pug'
-            }
         end
     }
 }
