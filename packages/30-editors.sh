@@ -8,20 +8,18 @@ install() {
     # Neovim dependencies
     apt_install ripgrep fd-find python3-pip python3-venv unzip curl gcc g++ make tar
 
-    # Tree-sitter CLI (required by nvim-treesitter main branch: >=0.26.1, from cargo)
+    # Tree-sitter CLI (required by nvim-treesitter main branch: >=0.26.1)
     if ! command -v tree-sitter &>/dev/null; then
-        info "Installing tree-sitter-cli via cargo..."
-        if command -v cargo &>/dev/null; then
-            cargo install tree-sitter-cli 2>/dev/null && ok "tree-sitter-cli installed" || \
-                info "Install manually: cargo install tree-sitter-cli"
-        else
-            apt_install cargo 2>/dev/null || true
-            if command -v cargo &>/dev/null; then
-                cargo install tree-sitter-cli 2>/dev/null && ok "tree-sitter-cli installed"
-            else
-                info "tree-sitter-cli: install cargo first, then: cargo install tree-sitter-cli"
-            fi
-        fi
+        info "Installing tree-sitter-cli (pre-built binary)..."
+        local ts_version="v0.26.11"
+        local ts_url="https://github.com/tree-sitter/tree-sitter/releases/download/${ts_version}/tree-sitter-cli-linux-x64.zip"
+        local ts_tmp="/tmp/tree-sitter-cli-$$.zip"
+        curl -L -o "$ts_tmp" "$ts_url"
+        unzip -o "$ts_tmp" -d /tmp/tree-sitter-install-$$ 2>/dev/null
+        sudo mv /tmp/tree-sitter-install-$$/tree-sitter /usr/local/bin/tree-sitter
+        sudo chmod +x /usr/local/bin/tree-sitter
+        rm -rf "$ts_tmp" /tmp/tree-sitter-install-$$
+        ok "tree-sitter-cli $(tree-sitter --version | head -1) installed"
     else
         ok "tree-sitter-cli found: $(tree-sitter --version | head -1)"
     fi
