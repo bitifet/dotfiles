@@ -96,6 +96,15 @@ apt_install() {
     done
 }
 
+# Ensure add-apt-repository is available (installs software-properties-common)
+ensure_add_apt_repository() {
+    if ! command -v add-apt-repository &>/dev/null; then
+        info "Installing software-properties-common (needed for add-apt-repository)..."
+        sudo apt-get update -qq
+        sudo apt-get install -y software-properties-common
+    fi
+}
+
 # ---- Stow helpers ----
 stow_package() {
     local pkg="$1"

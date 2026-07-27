@@ -34,12 +34,14 @@ install() {
             apt_install neovim
         else
             info "Distro neovim is old (v${nvim_ver:-?}). Adding PPA for latest..."
+            ensure_add_apt_repository
             sudo add-apt-repository -y ppa:neovim-ppa/unstable
             sudo apt-get update -qq
             apt_install neovim
         fi
     else
         info "Adding neovim PPA..."
+        ensure_add_apt_repository
         sudo add-apt-repository -y ppa:neovim-ppa/unstable
         sudo apt-get update -qq
         apt_install neovim

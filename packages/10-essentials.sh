@@ -8,6 +8,7 @@ DESCRIPTION="System essentials (git, curl, stow, build tools)"
 install() {
     apt_install git curl stow build-essential g++ make ssh
     apt_install whiptail dialog 2>/dev/null || true
+    apt_install software-properties-common 2>/dev/null || true
 }
 
 post_install() {
