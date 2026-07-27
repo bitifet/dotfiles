@@ -104,6 +104,12 @@ post_install() {
         info "Verifying nvim-treesitter..."
         if nvim --headless -c "lua local ok = pcall(require, 'nvim-treesitter.configs') if ok then vim.cmd('qall!') else vim.cmd('cq') end" 2>/dev/null; then
             ok "nvim-treesitter configs module found"
+            # Remove old parsers: AppImage neovim may need recompilation
+            local parser_dir="$HOME/.local/share/nvim/site/parser"
+            if [ -d "$parser_dir" ]; then
+                info "Cleaning old treesitter parsers for fresh rebuild..."
+                rm -rf "$parser_dir"
+            fi
             info "Installing treesitter parsers..."
             nvim --headless "+TSInstallSync all" +qa 2>/dev/null || true
         else
