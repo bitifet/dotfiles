@@ -31,6 +31,35 @@ After editing, either restart your terminal or `source ~/.bashrc`.
 > `source ~/.config/bash/init.sh`. If you already have a `.bashrc`, it was
 > backed up as `.bashrc.bak`.
 
+## Superfile (terminal file manager)
+
+Superfile (`spf`) is installed by `packages/42-superfile.sh`, which also installs
+the JetBrainsMono Nerd Font (for its icons) and ensures `XDG_PUBLICSHARE_DIR`
+is configured and exists.
+
+- **Config**: `stow/superfile/.config/superfile/config.toml` (symlinked to
+  `~/.config/superfile/`). `cd_on_quit = true` is enabled so the `spf()` shell
+  function can follow you to the last visited directory on quit.
+- **Hotkeys**: `stow/superfile/.config/superfile/hotkeys.toml`. Enter = cd_quit,
+  Right/`l` = confirm, Ctrl+Q/Esc = quit.
+- **Launch with**: `spf` (the wrapper defined in `init.sh` sets
+  `EDITOR=spf-editor` and handles the cd-on-quit handoff).
+- **Editor**: `spf` opens files via `spf-editor`
+  (`stow/tools/.local/bin/spf-editor`), which appends each opened file's path to
+  `$XDG_PUBLICSHARE_DIR/last_edited.md` before opening it in Neovim — so you can
+  jump into that file and press `gf` over a path to reopen it.
+
+### Font
+
+Superfile's icons need a Nerd Font. The package installs
+`JetBrainsMono Nerd Font Mono` to `~/.local/share/fonts/`. In Guake, set
+*Appearance → Font* to that font (disable "Use the system fixed-width font").
+
+### Ctrl+Q
+
+Superfile's quit key is Ctrl+Q, which terminals normally reserve for XON/XOFF
+flow control. `init.sh` runs `stty -ixon` to free it (and Ctrl+S).
+
 ## Customizing Neovim
 
 Your Neovim config lives at `~/.config/nvim/` (symlinked from

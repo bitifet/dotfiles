@@ -1,0 +1,22 @@
+#!/bin/bash
+# spf-editor — editor wrapper used by superfile (spf).
+#
+# Before opening a file in Neovim, appends its absolute path to a "recent
+# files" log kept in the XDG public-share directory (XDG_PUBLICSHARE_DIR).
+# That directory also holds symlinks to common config dirs, so inside superfile
+# you can jump straight to it and use `gf` (go to file) in Neovim over any
+# logged path to reopen it instantly.
+#
+# NOTE: provisional version — replace with the exact script from the machine
+# where superfile was originally tested if it differs.
+
+pub_dir="$(xdg-user-dir PUBLICSHARE 2>/dev/null || true)"
+[ -n "$pub_dir" ] || pub_dir="$HOME/Public"
+
+EDIT_HISTORY_FILE="$pub_dir/last_edited.md"
+
+if [ -n "${1:-}" ] && [ "$1" != "$EDIT_HISTORY_FILE" ]; then
+    printf '%s\n' "$1" >> "$EDIT_HISTORY_FILE"
+fi
+
+exec nvim "$@"

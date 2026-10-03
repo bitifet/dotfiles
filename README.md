@@ -36,6 +36,7 @@ your dotfiles.
 | `tools`        | Utility scripts (f, supergrep, git-fetchpr, ...)  |
 | `less`         | less pager keybindings                      |
 | `zellij`       | Zellij multiplexer config                   |
+| `superfile`    | Superfile terminal file manager config      |
 | `git`           | (empty — add per-machine .gitconfig)         |
 
 ## Structure

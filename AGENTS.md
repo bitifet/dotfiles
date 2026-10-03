@@ -51,6 +51,7 @@ Remote bootstrap (one-liner):
 | `30-editors.sh`         | neovim (latest PPA), vim, ripgrep, fd-find    |
 | `35-brave.sh`           | Brave browser                                 |
 | `40-node.sh`            | nvm + Node.js LTS (and underscore-cli)        |
+| `42-superfile.sh`       | Superfile terminal file manager + Nerd Font   |
 | `45-npm-globals.sh`     | agentp, carlino (npm i -g)                    |
 | `50-libreoffice.sh`     | LibreOffice (latest PPA)                      |
 | `60-touchpad.sh`        | Tap-to-click via libinput (auto-detects)      |
@@ -86,6 +87,18 @@ Each server runs `opencode serve --port 0` in a tmux window named after the proj
 - Neovim sources these files directly: csv, mappings, formatting, netrw, emoji, ai.
 - `ai.vim` provides `<Leader><CR>` to run AgentP on visual selection using ocmux URL.
 - OSC 52 clipboard works natively in tmux + nvim. Vim uses `vim-oscyank` plugin.
+
+## Superfile
+
+- Terminal file manager (`spf`). Config at `stow/superfile/.config/superfile/`.
+- `cd_on_quit = true` in config.toml — the shell `spf()` wrapper (in bash init.sh)
+  follows the shell to the last visited dir on exit.
+- Hotkeys tweaked: `Enter` = cd_quit, `Right`/`l` = confirm, `Ctrl+Q`/`Esc` = quit.
+  `Ctrl+Q` needs `stty -ixon` (flow control off), set in init.sh.
+- Icons need a Nerd Font; `42-superfile.sh` installs JetBrainsMono Nerd Font.
+- `spf()` sets `EDITOR=spf-editor` (`stow/tools/.local/bin/spf-editor`), which
+  logs each opened file's path to `$XDG_PUBLICSHARE_DIR/last_edited.md` before
+  opening it in Neovim (so `gf` can reopen it from inside that log).
 
 ## Shell config
 
