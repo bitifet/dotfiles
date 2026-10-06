@@ -14,24 +14,34 @@ post_install() {
     fi
 
     # ---- lid close behaviour ----
-    local logind_conf="/etc/systemd/logind.conf"
-    info "Configuring lid close actions..."
-
-    # Battery: suspend immediately, hibernate after 30 min
-    sudo sed -i 's/^#*HandleLidSwitch=.*/HandleLidSwitch=suspend-then-hibernate/' "$logind_conf"
-    # AC power: just lock the screen
-    sudo sed -i 's/^#*HandleLidSwitchExternalPower=.*/HandleLidSwitchExternalPower=lock/' "$logind_conf"
+    # Use a systemd-logind drop-in instead of editing /etc/systemd/logind.conf,
+    # so OS updates never clobber our settings.
+    local logind_dropin="/etc/systemd/logind.conf.d/99-dotfiles.conf"
+    info "Configuring lid close actions (logind.conf.d drop-in)..."
+    sudo mkdir -p "$(dirname "$logind_dropin")"
+    sudo tee "$logind_dropin" > /dev/null <<'EOF'
+[Login]
+# Battery: suspend immediately, hibernate after 30 min
+HandleLidSwitch=suspend-then-hibernate
+# AC power: just lock the screen
+HandleLidSwitchExternalPower=lock
+EOF
 
     ok "Lid close on battery → suspend-then-hibernate"
     ok "Lid close on AC     → lock screen"
 
     # ---- hibernate delay ----
-    local sleep_conf="/etc/systemd/sleep.conf"
+    # Use a systemd-sleep drop-in instead of editing /etc/systemd/sleep.conf.
+    local sleep_dropin="/etc/systemd/sleep.conf.d/99-dotfiles.conf"
     info "Configuring hibernate delay (30 minutes after suspend)..."
-    sudo sed -i 's/^#*HibernateDelaySec=.*/HibernateDelaySec=1800/' "$sleep_conf"
+    sudo mkdir -p "$(dirname "$sleep_dropin")"
+    sudo tee "$sleep_dropin" > /dev/null <<'EOF'
+[Sleep]
+HibernateDelaySec=1800
+EOF
 
     sudo systemctl restart systemd-logind
-    ok "Power settings applied"
+    ok "Power settings applied via drop-in files"
 
     # ---- hibernation instructions ----
     echo ""

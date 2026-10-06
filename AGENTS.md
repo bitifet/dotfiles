@@ -44,7 +44,7 @@ Remote bootstrap (one-liner):
 | Script                  | Contents                                      |
 |-------------------------|-----------------------------------------------|
 | `05-tailscale.sh`       | Mesh VPN                                      |
-| `10-essentials.sh`      | git, curl, stow, build-essential, ssh         |
+| `10-essentials.sh`      | git, curl, stow, build-essential, ssh, tig    |
 | `20-shell.sh`           | tmux, fzf, screen, tpm                        |
 | `22-guake.sh`           | Guake terminal (bitifet fork with OSC 52)      |
 | `25-ssh.sh`             | openssh-server, mosh (asks enable/disable)    |
@@ -122,3 +122,7 @@ Each server runs `opencode serve --port 0` in a tmux window named after the proj
 - `.install-log` tracks installed APT packages for cleanup (gitignored).
 - CapsLock→Escape auto-detects GNOME, XFCE, or generic X11 and applies accordingly.
 - Touchpad tap-to-click via libinput Xorg config.
+- System config is applied via `.d` drop-ins where possible (e.g. power settings
+  write `/etc/systemd/logind.conf.d/99-dotfiles.conf` and
+  `/etc/systemd/sleep.conf.d/99-dotfiles.conf` instead of editing the main files),
+  so OS updates don't clobber our customizations.

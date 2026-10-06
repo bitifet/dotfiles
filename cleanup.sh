@@ -58,7 +58,20 @@ if [ -f "$HOME/.config/autostart/capslock-remap.desktop" ]; then
     ok "Removed CapsLock autostart entry"
 fi
 
-# ---- Phase 4: Show what's left from install log ----
+# ---- Phase 4: Remove system drop-in configs ----
+step "Cleaning system drop-in configs..."
+
+for dropin in \
+    /etc/systemd/logind.conf.d/99-dotfiles.conf \
+    /etc/systemd/sleep.conf.d/99-dotfiles.conf \
+; do
+    if [ -f "$dropin" ]; then
+        sudo rm -f "$dropin"
+        ok "Removed $dropin"
+    fi
+done
+
+# ---- Phase 5: Show what's left from install log ----
 if [ -f "$INSTALL_LOG" ]; then
     echo ""
     step "Previous installations (from .install-log):"
