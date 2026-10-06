@@ -52,15 +52,23 @@ select_categories() {
         dialog --title "$title" --checklist "Select what to install:" \
             20 70 "$(( ${#items[@]} / 2 ))" "${args[@]}" 3>&1 1>&2 2>&3
     else
-        echo "==> Available categories (already installed marked with ✅):"
+        echo "==> Available categories (already installed marked with ✅):" >&2
         for ((i=0; i<${#items[@]}; i+=2)); do
             local mark=""
             [ "${items[i+1]}" = "OFF" ] && mark=" ✅"
-            echo "    ${items[i]}$mark"
+            echo "    ${items[i]}$mark" >&2
         done
-        echo
+        echo >&2
         read -r -p "Enter category names to install (space-separated, or 'all'): " selection
-        echo "$selection"
+        if [ "$selection" = "all" ]; then
+            local names=()
+            for ((i=0; i<${#items[@]}; i+=2)); do
+                names+=("${items[i]}")
+            done
+            echo "${names[*]}"
+        else
+            echo "$selection"
+        fi
     fi
 }
 
