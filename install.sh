@@ -43,6 +43,17 @@ else
     ok "git found: $(git --version)"
 fi
 
+# ---- Step 1b: Ensure whiptail (interactive menu) ----
+# setup.sh uses whiptail (or dialog) for the category checklist. Install it here
+# so the menu is available immediately after bootstrap, before essentials.
+if command -v whiptail &>/dev/null || command -v dialog &>/dev/null; then
+    ok "whiptail/dialog found"
+else
+    step "Installing whiptail (for the interactive menu)..."
+    sudo apt-get update -qq && sudo apt-get install -y whiptail dialog
+    ok "whiptail installed"
+fi
+
 # ---- Step 2: Clean up old home-as-git-root setup ----
 if [ -d "$HOME/.git" ]; then
     step "Cleaning up old home-as-git-root setup..."

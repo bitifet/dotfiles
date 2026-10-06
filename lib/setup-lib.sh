@@ -60,7 +60,12 @@ select_categories() {
         done
         echo >&2
         read -r -p "Enter category names to install (space-separated, or 'all'): " selection
-        if [ "$selection" = "all" ]; then
+        # Normalize: trim surrounding whitespace and lowercase so 'all', 'ALL',
+        # or ' all ' are all recognized as "install everything".
+        local sel="${selection,,}"
+        sel="${sel#"${sel%%[![:space:]]*}"}"
+        sel="${sel%"${sel##*[![:space:]]}"}"
+        if [ "$sel" = "all" ]; then
             local names=()
             for ((i=0; i<${#items[@]}; i+=2)); do
                 names+=("${items[i]}")
@@ -152,9 +157,12 @@ stow_package() {
             [ -n "$d" ] && unique_dirs+=("$d")
         done < <(printf '%s\n' "${dirs[@]}" | sort -u)
 
-        # Back up the shallowest directories that cover all conflicts
+        # Back up the shallowest directories that cover all conflicts.
+        # Never move $HOME itself: a file directly in $HOME (e.g. ~/.bashrc)
+        # has $HOME as its dirname, and must be backed up individually below.
         local backed_up=()
         for d in "${unique_dirs[@]}"; do
+            [ "$d" = "$HOME" ] && continue
             local covered=false
             for b in "${backed_up[@]}"; do
                 if [[ "$d" == "$b"/* ]] || [ "$d" = "$b" ]; then
