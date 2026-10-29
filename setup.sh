@@ -116,6 +116,19 @@ step "Creating symlinks..."
 
 # Always stow these core packages:
 stow_package bash
+
+# Remove links left by tools that were deleted from the stow package.
+# Only remove links still pointing at those exact dotfiles-managed locations;
+# leave a manually installed command with the same name untouched.
+for obsolete_tool in openprompt show; do
+    tool_link="$HOME/.local/bin/$obsolete_tool"
+    tool_source="$STOW_DIR/tools/.local/bin/$obsolete_tool"
+    if [ -L "$tool_link" ] && [ "$(readlink -f "$tool_link" 2>/dev/null || true)" = "$tool_source" ]; then
+        info "Removing obsolete dotfiles symlink: $tool_link"
+        rm -- "$tool_link"
+    fi
+done
+
 stow_package tools
 
 # The rest are stowed by their respective post_install hooks
