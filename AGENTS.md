@@ -75,9 +75,14 @@ Each server runs `opencode serve --port 0` in a tmux window named after the proj
 ## Tmux
 
 - Prefix is `Tab`. Press `Tab` twice to send literal Tab to apps.
+- Pane navigation is `Tab` + `h/j/k/l`; in Vim/Neovim these same keys move
+  between editor splits and continue into adjacent tmux panes at split edges
+  via `christoomey/vim-tmux-navigator`. Its default unprefixed Ctrl-hjkl maps
+  are disabled to preserve the custom keybindings.
 - `F12` toggles to/from the Opencode tmux session.
 - TERM set to `tmux-256color` in tmux.conf.
-- TPM plugins (resurrect) are installed by the setup script, not tracked in git.
+- TPM plugins (resurrect, vim-tmux-navigator) are installed by the setup script,
+  not tracked in git.
 
 ## Editors
 

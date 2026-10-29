@@ -223,10 +223,10 @@ vim.cmd("nmap <tab>x <c-w>c")
 vim.cmd("nmap <tab>X <c-w>o")
 
 -- Window navigation (hjkl)
-vim.cmd("nmap <tab>h <c-w>h")
-vim.cmd("nmap <tab>j <c-w>j")
-vim.cmd("nmap <tab>k <c-w>k")
-vim.cmd("nmap <tab>l <c-w>l")
+vim.cmd("nmap <silent> <tab>h <cmd>TmuxNavigateLeft<CR>")
+vim.cmd("nmap <silent> <tab>j <cmd>TmuxNavigateDown<CR>")
+vim.cmd("nmap <silent> <tab>k <cmd>TmuxNavigateUp<CR>")
+vim.cmd("nmap <silent> <tab>l <cmd>TmuxNavigateRight<CR>")
 
 -- Window resizing (hjkl)
 vim.cmd("nmap <tab>H :vertical<space>resize<space>-1<enter>")
@@ -242,6 +242,5 @@ vim.cmd("nmap <tab>L :vertical<space>resize<space>+1<enter>")
 -- bind -r M-k send-keys <tab>K
 -- bind -r M-l send-keys <tab>L
 -- -----------------------------------------------
-
 
 

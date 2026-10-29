@@ -5,6 +5,7 @@
 if empty(glob("~/.vim/autoload/plug.vim"))
     execute '!curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
 endif
+let g:tmux_navigator_no_mappings = 1
 " ------------------------------------------------------------------
 
 " NOTE:
@@ -30,5 +31,8 @@ Plug 'https://github.com/adelarsq/vim-matchit'
 
 " OSC 52 clipboard via escape sequences (works over SSH + tmux):
 Plug 'ojroques/vim-oscyank'
+
+" Seamless navigation between Vim splits and tmux panes (custom Tab+hjkl maps)
+Plug 'christoomey/vim-tmux-navigator'
 
 call plug#end()

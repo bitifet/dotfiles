@@ -124,10 +124,10 @@ nmap <tab>x <c-w>c
 nmap <tab>X <c-w>o
 
 " Window navigation (hjkl)
-nmap <tab>h <c-w>h
-nmap <tab>j <c-w>j
-nmap <tab>k <c-w>k
-nmap <tab>l <c-w>l
+nmap <silent> <tab>h :TmuxNavigateLeft<CR>
+nmap <silent> <tab>j :TmuxNavigateDown<CR>
+nmap <silent> <tab>k :TmuxNavigateUp<CR>
+nmap <silent> <tab>l :TmuxNavigateRight<CR>
 
 " Window resizing (hjkl)
 nmap <tab>H :vertical<space>resize<space>-1<enter>
@@ -143,4 +143,3 @@ nmap <tab>L :vertical<space>resize<space>+1<enter>
 " bind -r M-k send-keys <tab>K
 " bind -r M-l send-keys <tab>L
 " -----------------------------------------------
-
