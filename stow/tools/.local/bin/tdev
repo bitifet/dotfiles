@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# vim: set filetype=bash
+
+# Target the current tmux pane.
+target=${TMUX_PANE:?Must be run inside tmux}
+
+# Split off the right-hand pane (25% of the width).
+tmux split-window -h -p 25 -t "$target"
+
+# Split the original left pane into two equal-height panes.
+bottom=$(tmux split-window -v -p 50 -t "$target" -P -F '#{pane_id}')
+
+# Launch Neovim in the bottom pane's shell.
+tmux send-keys -t "$bottom" 'nvim .' Enter
+
+# Return focus to the top-left pane.
+tmux select-pane -t "$target"
