@@ -103,12 +103,14 @@ Some vimrc files are **shared** with Neovim (sourced from `init.lua`):
 ## Adding your own scripts
 
 Put scripts in `stow/tools/.local/bin/`. Make them executable (`chmod +x`).
-They become available at `~/.local/bin/<name>` immediately.
+After adding a script, run the following from anywhere to create its symlink at
+`~/.local/bin/<name>` (or update the existing tools package links):
 
 ```bash
 cd ~/.dotfiles
 vim stow/tools/.local/bin/my-script
 chmod +x stow/tools/.local/bin/my-script
+stow -t ~ -d ~/.dotfiles/stow tools
 git add stow/tools/.local/bin/my-script
 git commit -m "Add my-script"
 ```
