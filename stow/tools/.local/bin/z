@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# vim: set filetype=bash
+
+HELP=$(cat <<'EOF'
+z - Zellij session and SSH launcher
+
+Usage:
+    z [REMOTE_HOST]
+    z --help
+
+Without arguments:
+    Attach to the current Zellij session, or the first available session.
+    If no session exists, create one named "main".
+
+With REMOTE_HOST:
+    Open a new tab in the selected Zellij session and connect via SSH.
+    REMOTE_HOST accepts SSH hostnames, aliases, IPv4 addresses, and
+    optional username prefixes (user@host).
+
+    The tab is named after the hostname, without its domain or username.
+    IPv4 addresses are preserved.
+
+When executed inside Zellij:
+    Reuse the current session without opening another Zellij client.
+
+When executed outside Zellij:
+    Attach to the selected session (creating it if necessary).
+    If a remote host was specified, open its SSH tab in the background.
+
+Examples:
+    z
+    z server01
+    z user@server01.example.com
+    z 192.168.1.10
+    z --help
+EOF
+)
+
+if [[ ${1:-} == --help || ${1:-} == -h ]]; then
+    printf '%s\n' "$HELP"
+    exit 0
+fi
+
+# Pick remote host name from first argument if any:
+REMOTE_HOST=${1:-}
+
+# Strip optional SSH username and domain, preserving IPv4 addresses:
+REMOTE_NAME=${REMOTE_HOST##*@}
+if [[ ! $REMOTE_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    REMOTE_NAME=${REMOTE_NAME%%.*}
+fi
+
+# Handle session name:
+if [[ -n ${ZELLIJ:-} ]]; then
+    # Fail early if the current session cannot be determined:
+    if [[ -z ${ZELLIJ_SESSION_NAME:-} ]]; then
+        echo "Error: Cannot determine current Zellij session name." >&2
+        exit 1
+    fi
+    # Use the current session name:
+    SESSION="${ZELLIJ_SESSION_NAME}"
+else
+    # Pick first listed session if any:
+    SESSION=$(zellij ls --short 2>/dev/null | head -n 1);
+    # Otherwise create a default one:
+    SESSION=${SESSION:-main}
+fi
+
+connect_remote() {
+    # Open new tab for and ssh to the remote host in the existing Zellij session
+    zellij -s "${SESSION}" \
+        action new-tab -n "${REMOTE_NAME}" -- \
+        ssh "$REMOTE_HOST"
+
+};
+
+# Determine whether we're already inside Zellij.
+if [[ -n ${ZELLIJ:-} ]]; then
+
+    # If a remote host is specified, create a new tab for it in the current Zellij session.
+    if [[ -n ${REMOTE_HOST:-} ]]; then
+        connect_remote;
+    else
+        # Otherwise, just print a minimal information message to stderr and exit.
+        echo "Already in Zellij!!" >&2
+        echo "Use 'z <REMOTE_HOST>' to open a new tab in the current session." >&2
+        echo "More info: z --help" >&2
+    fi
+
+else
+
+    # Defer new tab creation to a background process to avoid blocking the current shell.
+    if [[ -n ${REMOTE_HOST:-} ]]; then
+        # If a remote host is specified, wait for the session being available
+        # and create a new tab for it in the Zellij session.
+        (
+            # Wait until the Zellij session exists
+            for ((i=0; i<50; i++)); do
+                if zellij ls --short 2>/dev/null | grep -Fxq "$SESSION"; then
+                    connect_remote
+                    exit
+                fi
+                sleep 0.2
+            done
+            echo "Timeout waiting for Zellij session: $SESSION" >&2
+        ) >> "${XDG_STATE_HOME:-$HOME/.local/state}/zellij-launcher.log" 2>&1 &
+
+    fi
+
+    # Attach to the session, creating it if it doesn't exist:
+    zellij attach --create "${SESSION}";
+
+fi
+
