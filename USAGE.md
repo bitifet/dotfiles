@@ -115,6 +115,10 @@ git add stow/tools/.local/bin/my-script
 git commit -m "Add my-script"
 ```
 
+After `./setup.sh --stow` has been run, repository hooks also restow `tools`
+after commits and pulls/merges. They stay inactive in a fresh clone until setup
+has stowed the tools package.
+
 ## Managing git identity
 
 `stow/git/` is an empty directory ready for your `.gitconfig`. Create it

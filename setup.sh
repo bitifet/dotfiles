@@ -131,6 +131,11 @@ done
 
 stow_package tools
 
+# Enable repository hooks only after the tools package is installed. The marker
+# keeps hooks inert in fresh clones and until this setup has run successfully.
+git -C "$DOTFILES" config core.hooksPath .githooks
+git -C "$DOTFILES" config dotfiles.toolsStowed true
+
 # The rest are stowed by their respective post_install hooks
 # (so we don't create dangling symlinks for uninstalled tools)
 

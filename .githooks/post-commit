@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -u
+
+repo="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+[ "$(git -C "$repo" config --bool dotfiles.toolsStowed 2>/dev/null || true)" = true ] || exit 0
+[ -d "$repo/stow/tools" ] || exit 0
+
+if ! command -v stow >/dev/null 2>&1; then
+    echo "dotfiles hook: GNU Stow not found; skipping tools update" >&2
+    exit 0
+fi
+stow -R -t "$HOME" -d "$repo/stow" tools || \
+    echo "dotfiles hook: could not restow tools; run: stow -R -t ~ -d '$repo/stow' tools" >&2
