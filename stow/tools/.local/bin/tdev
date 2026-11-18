@@ -14,4 +14,4 @@ bottom=$(tmux split-window -v -p 50 -t "$target" -P -F '#{pane_id}')
 tmux send-keys -t "$bottom" 'nvim .' Enter
 
 # Return focus to the top-left pane.
-tmux select-pane -t "$target"
+#tmux select-pane -t "$target"

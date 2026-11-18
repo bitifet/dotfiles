@@ -15,6 +15,7 @@
 " <Leader><CR> to run AgentP on that text.
 function! s:AgentPWithSave() range
   silent! update
+  "execute a:firstline . "," . a:lastline . "!agentp --defer 2 --qa $(ocmux)"
   execute a:firstline . "," . a:lastline . "!agentp --qa $(ocmux)"
   silent! update
 endfunction
