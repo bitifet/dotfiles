@@ -143,13 +143,13 @@ keybinds clear-defaults=true {
         //bind "Alt =" { Resize "Increase"; }
 
         // Tabs and panes:
-        bind "Alt h" { GoToPreviousTab; }
-        bind "Alt l" { GoToNextTab; }
-        bind "Alt j" { MoveFocus "left"; }
-        bind "Alt k" { MoveFocus "right"; }
+        bind "Alt y" { GoToPreviousTab; }
+        bind "Alt o" { GoToNextTab; }
+        bind "Alt u" { MoveFocus "left"; }
+        bind "Alt i" { MoveFocus "right"; }
 
-        bind "Alt y" { MoveTab "left"; }
-        bind "Alt o" { MoveTab "right"; }
+        bind "Ctrl y" { MoveTab "left"; }
+        bind "Ctrl o" { MoveTab "right"; }
 
         bind "Alt [" { PreviousSwapLayout; }
         bind "Alt ]" { NextSwapLayout; }
